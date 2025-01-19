@@ -1,0 +1,39 @@
+/* Custom scrollbar styling */
+body{
+    background-color: #D9D9D9;
+}
+
+#sidebarCont::-webkit-scrollbar {
+    width: 3px; /* Width of the scrollbar */
+}
+
+#sidebarCont::-webkit-scrollbar-track {
+    background: transparent; /* Make the track transparent */
+}
+
+#sidebarCont::-webkit-scrollbar-thumb {
+    position: absolute;
+    background-color: rgba(
+        255,
+        255,
+        255,
+        0.4
+    ); /* Light thumb with some transparency */
+    border-radius: 10px; /* Rounded corners for the thumb */
+    border: 2px solid transparent; /* Optional: Border to give a slight outline effect */
+}
+
+#sidebarCont::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(
+        255,
+        255,
+        255,
+        0.7
+    ); /* Slightly darker thumb on hover */
+}
+.nav-item {
+    transition: background-color 0.2 ease;
+}
+.nav-item.active {
+    background-color: #626161;
+}

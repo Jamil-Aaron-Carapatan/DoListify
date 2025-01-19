@@ -1,0 +1,52 @@
+
+.main-content {
+    margin-top: 72px;
+    width: 100%;
+    min-height: calc(100vh-82px);
+    padding-left: 0.5rem
+        /* 8px */
+    ;
+    padding-right: 0.5rem
+        /* 8px */
+    ;
+    flex: 1 1 0%;
+    overflow: hidden;
+    transition-duration: 300ms;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 1024px) {
+    .main-content {
+        margin-left: 16rem
+            /* 256px */
+        ;
+        padding-left: 0.25rem
+            /* 4px */
+        ;
+        padding-right: 8px
+            /* 4px */
+        ;
+        width: calc(100% - 256px);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-bounce-slow {
+    animation: bounce 2s infinite;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
