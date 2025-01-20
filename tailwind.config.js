@@ -90,7 +90,6 @@ export default {
                     'font-weight': '400',
                     'line-height': '130%',
                     'font-style': 'normal',
-                    'color': '#FFF',
                 },
                 '.text-medium': {
                     'font-family': 'Inter',
@@ -98,7 +97,6 @@ export default {
                     'font-style': 'normal',
                     'font-weight': '500',
                     'line-height': '20px',
-                    'color': '#FFF',
                 },
                 '.text-large': {
                     'font-family': 'Nunito',
@@ -106,7 +104,6 @@ export default {
                     'font-weight': '900',
                     'line-height': '130%',
                     'font-style': 'normal',
-                    'color': '#FFF',
                 }
             });
             addComponents({

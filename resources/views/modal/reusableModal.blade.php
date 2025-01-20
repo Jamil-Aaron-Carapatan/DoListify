@@ -10,17 +10,17 @@
                 <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                     <div class="flex flex-col items-start">
                         <div class="mt-3 sm:mt-0 ">
-                            <h3 id="modalTitle" class="text-xl font-bold text-center lg:text-start mb-4">Are you sure?</h3>
-                            <p id="modalMessage" class="text-sm text-gray-500 text-center lg:text-start mb-4">You can customize this
+                            <h3 id="modalTitle" class="text-large text-lg text-cyan-800 text-center lg:text-start mb-4">Are you sure?</h3>
+                            <p id="modalMessage" class="text-medium text-cyan-900 text-center lg:text-start mb-4">You can customize this
                                 message.</p>
                         </div>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                     <button id="confirmButton"
-                        class="inline-flex w-full justify-center rounded-md px-3 py-2 bg-cyan-700 text-sm font-semibold text-white transition-all shadow-sm hover:bg-cyan-600 sm:ml-3 sm:w-auto">Confirm</button>
+                        class="inline-flex w-full justify-center rounded-md px-3 py-2 bg-cyan-700 text-large text-sm text-white transition-all shadow-sm hover:bg-cyan-600 sm:ml-3 sm:w-auto">Confirm</button>
                     <button id="cancelButton"
-                        class="mt-3 inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-gray-600 shadow-sm transition-all hover:bg-gray-200 sm:mt-0 sm:w-auto">Cancel</button>
+                        class="mt-3 inline-flex w-full justify-center rounded-md  px-3 py-2 text-large text-sm text-gray-600 shadow-sm transition-all hover:bg-gray-200 sm:mt-0 sm:w-auto">Cancel</button>
                 </div>
             </div>
         </div>

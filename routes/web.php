@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 // Root redirect
@@ -23,17 +24,23 @@ Route::middleware(['guest'])->group(function () {
 
 // Auth routes (require login)
 Route::middleware(['auth'])->group(function () {
+
+    Route::get('/DoListify/Profile', [SettingsController::class, 'showProfile'])->name('profile');
+    Route::post('/DoListify/Profile', [SettingsController::class, 'updateProfile'])->name('profile.update');
+    Route::delete('/profile/remove-avatar', [SettingsController::class, 'removeAvatar'])->name('profile.removeAvatar');
+
     // Page View Routes
     Route::get('/DoListify/Dashboard', [ProjectController::class, 'getProjectStats'])->name('dashboard');
-    Route::view('/DoListify/Add-Project', 'pages.AddProject')->name('addProject');
+    Route::get('/DoListify/Add/Task/', [ProjectController::class, 'showAddTask'])->name('addTask');
+    Route::view('/DoListify/Add/Project', 'pages.AddProject')->name('addProject');
     Route::view('/DoListify/Team', 'pages.Team')->name('team');
     Route::view('/DoListify/Calendar', 'pages.Calendar')->name('calendar');
     Route::view('/DoListify/Leaderboard', 'pages.Leaderboard')->name('leaderboard');
     Route::view('/DoListify/Settings', 'pages.Settings')->name('settings');
 
     // Project Related Routes
-    Route::get('/DoListify/Projects',[ProjectController::class, 'projectView'] )->name('projects');
-    Route::post('/DoListify/Add-Project/personal', [ProjectController::class, 'store'])->name('addProject.post');
+    Route::get('/DoListify/Task/To Do',[ProjectController::class, 'projectView'] )->name('projects');
+    Route::post('/DoListify/Add-Task/personal', [ProjectController::class, 'store'])->name('addTask.post');
     Route::post('/DoListify/Add-Project/team', [ProjectController::class, 'storeTeamProject'])->name('projects.storeTeam');
     Route::get('/DoListify/Projects/filter', [ProjectController::class, 'filter'])->name('projects.filter');
     Route::get('/DoListify/search-projects', [ProjectController::class, 'searchProjects'])->name('search.projects');
@@ -41,8 +48,7 @@ Route::middleware(['auth'])->group(function () {
     // Task Related Routes
     Route::match(['get', 'post'], '/DoListify/Task/{projectId}', [TaskController::class, 'taskview'])->name('task');
     Route::get('/DoListify/Task/create', [TaskController::class, 'create'])->name('tasks.create');
-    Route::post('/DoListify/Task/{taskId}/attachment', [TaskController::class, 'uploadAttachment'])->name('task.attachment');
-    Route::post('/task/{taskId}/attachment', [TaskController::class, 'storeAttachment'])->name('task.uploadAttachment');
+    Route::post('/task/{projectId}/attachment', [TaskController::class, 'storeAttachment'])->name('task.uploadAttachment');
 
     Route::patch('/tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
     // Notification Routes
@@ -58,8 +64,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/search-users', [ProjectController::class, 'searchUsers'])->name('search.users');
 
     // Settings Routes
-    Route::post('/settings/update-name', [App\Http\Controllers\SettingsController::class, 'updateName'])->name('name.update');
-    Route::post('/settings/password', [App\Http\Controllers\SettingsController::class, 'updatePassword'])->name('password.update');
+    Route::post('/settings/update-name', [SettingsController::class, 'updateName'])->name('name.update');
+    Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('password.update');
 });
 
 // Registration verification routes

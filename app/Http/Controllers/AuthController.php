@@ -581,5 +581,6 @@ class AuthController extends Controller
 
         return redirect()->route('auth.resetSuccess');
     }
+    
 }
 

@@ -20,7 +20,7 @@
                         type="password" name="password_confirmation" placeholder="Confirm Password" required>
                 </div>
             </div>
-            <button type="submit"class="w-full flex justify-center py-3 lg:py-3 xl:py-4 px-4 border shadow-cyan-800 border-transparent rounded-md shadow-md text-white bg-cyan-900 hover:bg-cyan-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-800/75" class="">Reset Password</button>
+            <button type="submit"class="w-full flex justify-center text-large text-[16px] py-3 lg:py-3 xl:py-4 px-4 border shadow-cyan-800 border-transparent rounded-md shadow-md text-white bg-cyan-900 hover:bg-cyan-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-800/75" class="">Reset Password</button>
         </form>
     </div>
     @include('modal.reusableModal')

@@ -10,7 +10,6 @@ class Task extends Model
     use HasFactory;
 
     protected $fillable = [
-        'project_id',
         'name',
         'description',
         'assigned_to',
@@ -19,7 +18,12 @@ class Task extends Model
         'priority',
         'status',
         'attachment',
+        'reminder_time',
     ];
+    public function checklist()
+    {
+        return $this->hasMany(TaskChecklist::class);
+    }
 
     protected $casts = [
         'due_date' => 'date',
@@ -56,7 +60,7 @@ class Task extends Model
      */
     public function project()
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Project::class, 'project_id');
     }
 
     /**
@@ -86,5 +90,5 @@ class Task extends Model
     {
         return $this->hasMany(Comment::class, 'task_id');
     }
-    
+
 }

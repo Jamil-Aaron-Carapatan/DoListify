@@ -30,21 +30,33 @@
                     <i class="fas fa-info-circle"></i>
                     <span>Status: {{ $project->tasks->first()->status ?? 'To Do' }}</span>
                 </div>
-                <span class="flex items-center">Team: 
+                <span class="flex items-center">Team:
                     <div class="flex -space-x-3 ml-2">
                         @if ($project->members->count() > 0)
                             @foreach ($project->members as $member)
                                 <div class="relative group">
-                                    <div class="w-8 h-8 rounded-full {{ ['bg-cyan-800', 'bg-teal-800', 'bg-blue-800', 'bg-indigo-800', 'bg-purple-800'][array_rand(['bg-cyan-800', 'bg-teal-800', 'bg-blue-800', 'bg-indigo-800', 'bg-purple-800'])] }} text-white flex items-center justify-center font-bold cursor-pointer hover:z-10 transition-transform hover:scale-110">
-                                        {{ strtoupper(substr($member->first_name, 0, 1)) }}{{ strtoupper(substr($member->last_name, 0, 1)) }}
-                                    </div>
-                                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-cyan-900 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                    @if ($member->avatar)
+                                        <!-- Show avatar if available -->
+                                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                                            alt="{{ $member->first_name }}'s Profile Picture"
+                                            class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-md cursor-pointer hover:z-10 transition-transform hover:scale-110">
+                                    @else
+                                        <!-- Fallback to initials if no avatar -->
+                                        <div
+                                            class="w-8 h-8 rounded-full {{ ['bg-cyan-800', 'bg-teal-800', 'bg-blue-800', 'bg-indigo-800', 'bg-purple-800'][array_rand(['bg-cyan-800', 'bg-teal-800', 'bg-blue-800', 'bg-indigo-800', 'bg-purple-800'])] }} text-white flex items-center justify-center font-bold cursor-pointer hover:z-10 transition-transform hover:scale-110">
+                                            {{ strtoupper(substr($member->first_name, 0, 1)) }}{{ strtoupper(substr($member->last_name, 0, 1)) }}
+                                        </div>
+                                    @endif
+                                    <!-- Tooltip for member's full name -->
+                                    <div
+                                        class="absolute -top-8 left-1/2 -translate-x-1/2 bg-cyan-900 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20">
                                         {{ $member->first_name }} {{ $member->last_name }}
                                     </div>
                                 </div>
                             @endforeach
                             @if ($project->members->count() > 5)
-                                <div class="w-8 h-8 rounded-full bg-cyan-700 text-white flex items-center justify-center text-xs font-medium border-2 border-white">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-cyan-700 text-white flex items-center justify-center text-xs font-medium border-2 border-white">
                                     +{{ $project->members->count() - 5 }}
                                 </div>
                             @endif
@@ -66,7 +78,8 @@
                     <h5 class="text-2xl text-large tracking-wide">{{ ucfirst($project->tasks->first()->name) }}</h5>
                     <div class="flex items-center gap-2 bg-cyan-700/50 px-4 py-2 rounded-lg whitespace-nowrap">
                         <i class="fas fa-star text-yellow-300"></i>
-                        <span class="text-yellow-300 font-bold">+{{ $project->tasks->first()->points ?? 50 }} pts</span>
+                        <span class="text-yellow-300 font-bold">+{{ $project->tasks->first()->points ?? 50 }}
+                            pts</span>
                     </div>
                 </div>
 
@@ -192,21 +205,33 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-users"></i>
-                        <span class="flex items-center">Team: 
+                        <span class="flex items-center">Team:
                             <div class="flex -space-x-3 ml-2">
                                 @if ($project->members->count() > 0)
                                     @foreach ($project->members as $member)
                                         <div class="relative group">
-                                            <div class="w-8 h-8 rounded-full {{ ['bg-cyan-800', 'bg-teal-800', 'bg-blue-800', 'bg-indigo-800', 'bg-purple-800'][array_rand(['bg-cyan-800', 'bg-teal-800', 'bg-blue-800', 'bg-indigo-800', 'bg-purple-800'])] }} text-white flex items-center justify-center font-bold cursor-pointer hover:z-10 transition-transform hover:scale-110">
-                                                {{ strtoupper(substr($member->first_name, 0, 1)) }}{{ strtoupper(substr($member->last_name, 0, 1)) }}
-                                            </div>
-                                            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-cyan-900 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                            @if ($member->avatar)
+                                                <!-- Show avatar if available -->
+                                                <img src="{{ asset('storage/' . $member->avatar) }}"
+                                                    alt="{{ $member->first_name }}'s Profile Picture"
+                                                    class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-md cursor-pointer hover:z-10 transition-transform hover:scale-110">
+                                            @else
+                                                <!-- Fallback to initials if no avatar -->
+                                                <div
+                                                    class="w-8 h-8 rounded-full {{ ['bg-cyan-800', 'bg-teal-800', 'bg-blue-800', 'bg-indigo-800', 'bg-purple-800'][array_rand(['bg-cyan-800', 'bg-teal-800', 'bg-blue-800', 'bg-indigo-800', 'bg-purple-800'])] }} text-white flex items-center justify-center font-bold cursor-pointer hover:z-10 transition-transform hover:scale-110">
+                                                    {{ strtoupper(substr($member->first_name, 0, 1)) }}{{ strtoupper(substr($member->last_name, 0, 1)) }}
+                                                </div>
+                                            @endif
+                                            <!-- Tooltip for member's full name -->
+                                            <div
+                                                class="absolute -top-8 left-1/2 -translate-x-1/2 bg-cyan-900 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20">
                                                 {{ $member->first_name }} {{ $member->last_name }}
                                             </div>
                                         </div>
                                     @endforeach
                                     @if ($project->members->count() > 5)
-                                        <div class="w-8 h-8 rounded-full bg-cyan-700 text-white flex items-center justify-center text-xs font-medium border-2 border-white">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-cyan-700 text-white flex items-center justify-center text-xs font-medium border-2 border-white">
                                             +{{ $project->members->count() - 5 }}
                                         </div>
                                     @endif
@@ -215,6 +240,7 @@
                                 @endif
                             </div>
                         </span>
+
                     </div>
                 </div>
             </div>
@@ -222,10 +248,9 @@
         <!-- Comments Section -->
         <div class="bg-neutral-300 rounded-xl shadow p-4 min-h-[400px]">
             <div class="flex gap-3 border-b border-gray-400 pb-3">
-                @if (Auth::user()->profile_picture)
-                    <!-- If the user has a profile picture, display it -->
-                    <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}" alt="Profile Picture"
-                        class="w-10 h-10 rounded-full">
+                @if (auth()->user()->avatar)
+                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Profile Picture"
+                        class="w-10 h-10 rounded-full mr-3">
                 @else
                     <!-- If no profile picture, display the first letter of the first and last name -->
                     <div

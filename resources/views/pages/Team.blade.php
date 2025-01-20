@@ -13,7 +13,7 @@
                             <!-- Fixed Header Section -->
                             <div class="flex justify-between items-center mb-3">
                                 <h2 class="text-lg text-large text-cyan-800">{{ $project->title }}</h2>
-                                <span class="px-2 py-1 bg-cyan-600 text-white rounded-full text-xs">Team</span>
+                                <span class="px-2 py-1 bg-cyan-600 text-white text-medium rounded-full text-xs">Team</span>
                             </div>
 
                             <!-- Scrollable Content -->
@@ -27,7 +27,7 @@
                                                 <div
                                                     class="w-7 h-7 rounded-full flex items-center justify-center  bg-{{ ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'indigo', 'cyan'][array_rand(['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'indigo', 'cyan'])] }}-600">
                                                     <span
-                                                        class="text-white text-xs">{{ substr($project->leader()->first_name, 0, 1) }}</span>
+                                                        class="text-medium text-white text-xs">{{ substr($project->leader()->first_name, 0, 1) }}</span>
                                                 </div>
                                                 <span
                                                     class="ml-2 text-medium text-gray-500">{{ $project->leader()->first_name }}</span>

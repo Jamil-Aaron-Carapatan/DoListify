@@ -16,7 +16,9 @@ return new class extends Migration {
             $table->string('last_name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('avatar')->nullable();
             $table->string('verification_code', 6)->nullable();
+            $table->integer('points')->default(0);
             $table->rememberToken();
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('verification_expires_at')->nullable();

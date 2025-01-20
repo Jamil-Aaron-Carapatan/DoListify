@@ -14,13 +14,13 @@
             <div class="form-group mb-6">
                 <div class="mt-1 relative">
                     <input type="text" id="verification_code" name="code" maxlength="6"
-                        class="mb-2 shadow-cyan-800/75 appearance-none block w-full px-3 py-3 border-0 rounded-md shadow-md placeholder:text-slate-300 hover:shadow-cyan-500 focus:outline-none focus:border-b-0 focus:shadow-cyan-500 transition-all ease-in-out delay-75"
+                        class="mb-2 shadow-cyan-800/75 appearance-none block w-full px-3 py-3 border-0 rounded-md shadow-md placeholder:text-medium placeholder:text-slate-400 hover:shadow-cyan-500 focus:outline-none focus:border-b-0 focus:shadow-cyan-500 transition-all ease-in-out delay-75"
                         placeholder="Enter 6-digit code">
                     <span class="error-message hidden text-xs text-red-500"></span>
                 </div>
             </div>
             <button type="submit"
-                class=" w-full mb-2 flex justify-center py-3 lg:py-3 xl:py-4 px-4 border shadow-cyan-800 border-transparent rounded-md shadow-md text-white bg-cyan-900 hover:bg-cyan-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-800/75 ">
+                class=" w-full mb-2 flex text-large text-[16px] justify-center py-3 lg:py-3 xl:py-4 px-4 border shadow-cyan-800 border-transparent rounded-md shadow-md text-white bg-cyan-900 hover:bg-cyan-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-800/75 ">
                 Verify Email
             </button>
             <div class=" mb-4">

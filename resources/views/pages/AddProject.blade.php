@@ -1,74 +1,141 @@
-<!DOCTYPE html>
-<html lang="en">
+<form id="teamCompleteForm" action="{{ route('addProject.post') }}" method="POST" class="space-y-4">
+    @csrf
+    <input type="hidden" name="type" value="team">
+    <div class="flex justify-center">
+        <button type="button" id="addTeamMembersBtn"
+            class="w-full p-4 bg-zinc-300/80 text-lg text-medium text-gray-700 rounded-lg hover:text-cyan-800 transition-all flex items-center justify-center gap-2">
+            <i class="fas fa-users"></i>
+            Add Team Members
+        </button>
+    </div>
+    <!-- Title -->
+    <div class="mb-4">
+        <label class="labels labels text-medium">Project Title <span class="asterisk">*</span></label>
+        <input type="text" name="title" required class="inputTitle placeholder:text-medium placeholder:text-slate-400" placeholder="Give your project a name">
+        @error('title')
+            <span class="text-red-500 text-sm">{{ $message }}</span>
+        @enderror
+    </div>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="icon" href="/storage/elements/Icon.png" type="image/png">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="/storage/css/dist/addproject.css" as="style">
-    @extends('layout.PmsTheme')
-    @section('title', 'Add Project | DoListify: Make a plan to success')
-</head>
-
-<body>
-    @section('content')
-        <div id="main-content" class="main-content">
-            <div class="rounded-2xl px-2 pb-3  space-y-5">
-                <div class="content-container">
-                    <!-- Project Type Selection -->
-                    <div class="animate-fade-in">
-                        <label class="labels">Project Type</label>
-                        <div class="flex gap-4">
-                            <button type="button" data-type="personal" class="project-type-btn bg-cyan-800 text-white">
-                                Personal Project&nbsp;&nbsp;<i class="fa-solid fa-user"></i>
-                            </button>
-                            <button type="button" data-type="team" class="project-type-btn bg-zinc-300/80 text-gray-700">
-                                Team Project&nbsp;&nbsp;<i class="fas fa-users"></i>
-                            </button>
-                        </div>
-                        <input type="hidden" name="type" id="projectType" value="personal">
-                    </div>
-
-                    <div id="personalForm" class="project-form animate-fade-in">
-                        @include('pages.partials.personal')
-                    </div>
-
-                    <!-- Team Project Form -->
-                    <div id="teamForm" class="project-form hidden animate-fade-in">
-                        @include('pages.partials.team')
-                    </div>
+    <!-- Team Tasks -->
+    <div id="teamTasks" class="space-y-4">
+        <div class="task-item space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <!-- Task Name -->
+                <div>
+                    <label class="labels text-medium">Task Name <span class="asterisk">*</span></label>
+                    <input type="text" name="tasks[0][name]"
+                        class="required-field fields error-prone @error('tasks.*.name') border-red-500 @enderror  placeholder:text-medium placeholder:text-slate-400" 
+                        placeholder="What needs to be done?">
+                    @error('task.*.name')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <!-- Assignee -->
+                <div>
+                    <label class="labels text-medium">Assignee <span class="asterisk">*</span></label>
+                    <select name="tasks[0][assignee]"
+                        class="required-field fields text-medium text-slate-400 assignee-select error-prone @error('tasks.*.assignee') border-red-500 @enderror placeholder:text-medium placeholder:text-slate-400" onchange="this.classList.remove('text-zinc-400'); this.classList.add('text-black');">
+                        <!-- Options will be populated dynamically -->
+                        <option value="" disabled selected>Select Assignee
+                        </option>
+                    </select>
+                    @error('tasks.*.assignee')
+                        <span class="text-red-500 text-sm">{{ $message }} </span>
+                    @enderror
+                </div>
+            </div>
+            <!-- Due Date & Time -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="labels text-medium">Due Date <span class="asterisk">*</span></label>
+                    <input type="date" name="tasks[0][due_date]"
+                        class="required-field fields text-medium text-slate-400 focus:text-black error-prone @error('tasks.*.due_date') border-red-500 @enderror placeholder:text-medium placeholder:text-slate-400" oninput="this.classList.remove('text-slate-400'); this.classList.add('text-black')" >
+                    @error('tasks.*.due_date')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <label class="labels text-medium">Time <span class="asterisk">*</span></label>
+                    <input type="time" name="tasks[0][due_time]"
+                        class="required-field fields text-medium text-slate-400 focus:text-black error-prone @error('tasks.*.due_time') border-red-500 @enderror placeholder:text-medium placeholder:text-slate-400" oninput="this.classList.remove('text-slate-400'); this.classList.add('text-black');">
+                    @error('tasks.*.due_time')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+            <!-- Description -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="labels text-medium">Description </label>
+                    <textarea name="tasks[0][description]" class="fields placeholder:text-medium placeholder:text-slate-400" placeholder="Add some details..."></textarea>
+                </div>
+                <div>
+                    <label class="labels text-medium">Priority Level <span class="asterisk">*</span> </label>
+                    <select name="tasks[0][priority]"
+                        class="required-field fields text-medium text-slate-400 error-prone @error('tasks.*.priority') border-red-500 @enderror" 
+                        onchange="this.classList.remove('text-zinc-400'); this.classList.add('text-black');">
+                        <option value="" disabled selected>Select Priority Level
+                        </option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                    @error('tasks.*.priority')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
         </div>
+    </div>
 
-    @endsection
-</body>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Project Type Selection
-        const projectTypeBtns = document.querySelectorAll('.project-type-btn');
-        const projectTypeInput = document.getElementById('projectType');
+    <button type="button" id="addTaskBtn"
+        class="w-full p-4 bg-zinc-300/80 text-gray-700 rounded-lg hover:bg-violet-200 transition-all flex items-center justify-center gap-2">
+        <i class="fas fa-plus-circle"></i>
+        Add Another Task
+    </button>
+    <div class="text-right">
+        <button type="submit" class="px-8 py-3 bg-cyan-800 opacity-50 text-white rounded-lg transition-all cursor-not-allowed" disabled>
+            Create Project
+        </button>
+    </div>
+</form>
 
-        projectTypeBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                projectTypeBtns.forEach(btn => {
-                    btn.classList.remove('bg-cyan-800', 'text-white');
-                    btn.classList.add('bg-zinc-300/80', 'text-gray-700');
-                });
-                this.classList.remove('bg-zinc-300/80', 'text-gray-700');
-                this.classList.add('bg-cyan-800', 'text-white');
+<!-- Team Members Modal -->
+<div id="peopleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white px-4 sm:px-8 py-5 rounded-lg w-[95%] sm:w-[80%] md:w-[60%] lg:w-[500px] max-h-[90vh] overflow-y-auto animate-appear">
+        <div class="flex justify-between items-center mb-4 sm:mb-6">
+            <h2 class="text-cyan-900 text-large">Add Team Members</h2>
+        </div>  
 
-                // Show/Hide Project Forms
-                const projectForms = document.querySelectorAll('.project-form');
-                projectForms.forEach(form => form.classList.add('hidden'));
-                document.getElementById(`${this.dataset.type}Form`).classList.remove('hidden');
+        <div id="emailInputsContainer" class="email-input-container space-y-3 sm:space-y-4">
+            <div class="email-input-container relative">
+                <div class="relative">
+                    <input type="email" name="team_members[]"
+                        class="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm sm:text-base"
+                        placeholder="Enter team member's email">
+                </div>
+                <div class="error-message text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+        </div>
 
-            });
-        });
+        <button onclick="addEmailInput()"
+            class="mt-4 sm:mt-6 mb-6 sm:mb-8 w-full p-2.5 sm:p-3 bg-zinc-300/90 text-gray-700 rounded-lg hover:bg-gray-400 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+            id="addEmailInputBtn">
+            <i class="fas fa-plus"></i>
+            Add Another Email
+        </button>
 
-    });
-</script>
-
-</html>
+        <div class="flex justify-end gap-2 sm:gap-3">
+            <button onclick="closePeopleModal()"
+                class="px-4 sm:px-6 py-2 sm:py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-sm sm:text-base">
+                Cancel
+            </button>
+            <button onclick="saveTeamMembers()" id="saveTeamMembersBtn"
+                class="px-4 sm:px-6 py-2 sm:py-2.5 bg-cyan-800 text-white rounded-lg hover:bg-cyan-800 transition-all text-sm sm:text-base">
+                Add Members
+            </button>
+        </div>
+    </div>
+</div>
+<script src="/storage/js/team.js"></script>

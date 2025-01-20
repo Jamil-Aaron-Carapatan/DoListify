@@ -8,22 +8,23 @@ return new class extends Migration {
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('project_members', function (Blueprint $table) {
+        Schema::create('task_checklists', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained();
-            $table->enum('role', ['owner', 'member']);
+            $table->foreignId('task_id')->constrained()->onDelete('cascade'); // Link to tasks table
+            $table->string('name'); // Checklist item name
+            $table->boolean('completed')->default(false); // Completion status
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('project_members');
+        Schema::dropIfExists('task_checklists');
     }
 };

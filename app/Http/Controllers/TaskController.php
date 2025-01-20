@@ -5,11 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\Project;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
@@ -65,49 +63,42 @@ class TaskController extends Controller
 
     public function updateStatus(Request $request, Task $task)
     {
-        // Validate the input
         $request->validate([
             'status' => 'required|string|in:To Do,Ongoing,Done',
         ]);
-
-        // Update the task's status
         $task->update([
             'status' => $request->status,
         ]);
-
-        // Redirect back with success message
         return redirect()->back()->with('success', 'Task status updated successfully.');
     }
-    public function storeAttachment(Request $request, $taskId)
+
+    public function storeAttachment(Request $request, $projectId)
     {
-        // Validate the file
         $request->validate([
-            'attachment' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx,zip|max:10240', // Maximum size of 10MB
+            'attachment' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx,zip|max:10240',
         ]);
 
-        try {
-            // Find the task
-            $task = Task::findOrFail($taskId);
+        // Get the existing task for this project
+        $task = Task::where('project_id', $projectId)->first();
 
-            // Handle file upload
-            if ($request->hasFile('attachment')) {
-                $file = $request->file('attachment');
-                $fileName = time() . '_' . $file->getClientOriginalName(); // Ensure unique file name
-                $filePath = $file->storeAs('task_attachments', $fileName, 'public'); // Store in 'task_attachments' folder
-
-                // Save the file path in the task record
-                $task->update([
-                    'attachment' => $filePath, // Store the file path in the 'attachment' column
-                ]);
-            }
-            return redirect()->back()->with('success', 'Task status updated successfully.');
-        } catch (\Exception $e) {
-            // Log the error
-            Log::error('Attachment upload failed:', ['error' => $e->getMessage()]);
-
-            return back()->withErrors('Failed to upload attachment. Please try again.');
+        if (!$task) {
+            return back()->with('error', 'Task not found');
         }
+
+        // Handle old attachment if it exists
+        if ($task->attachment) {
+            Storage::disk('public')->delete($task->attachment);
+        }
+
+        $file = $request->file('attachment');
+        $fileName = time() . '_' . $file->getClientOriginalName();
+        $filePath = $file->storeAs('attachments', $fileName, 'public');
+
+        // Update the existing task with the new attachment
+        $task->update([
+            'attachment' => $filePath
+        ]);
+
+        return back()->with('success', 'Attachment uploaded successfully');
     }
-
-
 }

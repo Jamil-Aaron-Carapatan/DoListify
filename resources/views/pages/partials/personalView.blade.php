@@ -88,7 +88,10 @@
                 <div id="attachmentCont" class="hidden bg-white rounded-2xl rounded-tl-none p-4">
                     <div class="">
                         <div class="border rounded-md p-4 min-h-[200px] lg:min-h-[300]">
-                            <form method="POST" action="route('task.uploadAttachment', $task->id) "enctype="multipart/form-data" class="space-y-4">
+                            <form method="POST" 
+                                action="{{ route('task.uploadAttachment', ['projectId' => $project->id]) }}" 
+                                enctype="multipart/form-data" 
+                                class="space-y-4">
                                 @csrf
                                 <div class="flex items-center justify-center w-full">
                                     <label
@@ -128,7 +131,7 @@
                         @method('PATCH')
                         <input type="hidden" name="status" value="Ongoing">
                     </form>
-                    <button type="submit" onclick="showConfirmationStart()"
+                    <button type="button" onclick="showConfirmationStart()"
                         class="whitespace-nowrap px-4 py-2 lg:px-6 lg:py-2.5 text-sm lg:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl">
                         <i class="fas fa-play"></i>
                         <span class="hidden lg:inline">Start Task</span>
@@ -141,8 +144,7 @@
                     </button>
                 @elseif ($currentTask->status === 'Ongoing')
                     <!-- Ongoing button -->
-                    <form id="markAsDoneForm" action="{{ route('tasks.updateStatus', $currentTask->id) }}"
-                        method="POST">
+                    <form id="markAsDoneForm" action="{{ route('tasks.updateStatus', $currentTask->id) }}" method="POST">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="status" value="Done">
@@ -153,20 +155,21 @@
                         <i class="fas fa-spinner fa-spin"></i>
                         <span class="hidden lg:inline">Ongoing</span>
                     </button>
-                    <button type="submit" onclick="showConfirmationDone()"
+                    <button type="button" onclick="showConfirmationDone()"
                         class="whitespace-nowrap px-4 py-2 lg:px-6 lg:py-2.5 text-sm lg:text-base bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl">
                         <i class="fas fa-check"></i>
                         <span>Mark as done</span>
                     </button>
                 @else
-                    <div class="whitespace-nowrap px-4 py-2 lg:px-6 lg:py-2.5 text-sm lg:text-base bg-green-600 text-white rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl">
+                    <div
+                        class="whitespace-nowrap px-4 py-2 lg:px-6 lg:py-2.5 text-sm lg:text-base bg-green-600 text-white rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl">
                         <i class="fas fa-check"></i>
                         <span>Task Completed</span>
                     </div>
                 @endif
             @endif
         </div>
-
+        
         <!-- Mark as  Done Confirmation Modal -->
         <div id="confirmationModalDone"
             class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
@@ -238,9 +241,9 @@
         <!-- Comment Section -->
         <div class="bg-neutral-300 rounded-xl shadow p-4 min-h-[400px]">
             <div class="flex gap-3 border-b border-gray-400">
-                @if (Auth::user()->profile_picture)
-                    <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}" alt="Profile Picture"
-                        class="w-10 h-10 rounded-full">
+                @if (auth()->user()->avatar)
+                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Profile Picture"
+                        class="w-10 h-10 rounded-full mr-3">
                 @else
                     <div
                         class="w-10 h-10 rounded-full shadow-inner shadow-black bg-teal-500 text-white flex items-center font-bold justify-center">
@@ -359,7 +362,7 @@
 </div>
 
 <script>
-    function closeContFile() {
+     function closeContFile() {
         document.getElementById('file-cont').classList.add('hidden');
         document.getElementById('file-upload').value = '';
     }
@@ -405,11 +408,15 @@
         document.getElementById('startID').submit();
         hideConfirmationStart();
     }
-
-    document.addEventListener('click', function(event) {
-        const modal = document.getElementById('confirmationModalStart');
-        const modalContent = modal.querySelector('.bg-white');
-        if (!modalContent.contains(event.target) && !event.target.matches('button')) {
+    window.addEventListener('click', function(event) {
+        const modalDone = document.getElementById('confirmationModalDone');
+        const modalStart = document.getElementById('confirmationModalStart');
+        
+        if (event.target === modalDone) {
+            hideConfirmationDone();
+        }
+        
+        if (event.target === modalStart) {
             hideConfirmationStart();
         }
     });

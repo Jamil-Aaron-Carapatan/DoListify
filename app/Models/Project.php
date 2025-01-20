@@ -20,11 +20,10 @@ class Project extends Model
     /**
      * Get all tasks for the project
      */
-    public function tasks(): HasMany
+    public function tasks()
     {
-        return $this->hasMany(Task::class);
+        return $this->hasMany(Task::class, 'project_id');
     }
-
     /**
      * Get all members of the project
      */

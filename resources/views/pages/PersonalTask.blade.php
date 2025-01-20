@@ -1,22 +1,13 @@
-<form id="completeForm" action="{{ route('addProject.post') }}" method="POST" class="space-y-4">
+<form id="completeForm" action="{{ route('addProject.post') }}" method="POST" class="bg-white rounded-2xl p-4 shadow-md">
     @csrf
     <input type="hidden" name="type" value="personal">
-
-    <div class="mb-4 mt-2">
-        <label class="labels">Project Title <span class="asterisk">*</span></label>
-        <input type="text" name="title" required class="inputTitle required-field" placeholder="Give your project a name">
-        @error('title')
-            <span class="text-red-500 text-sm">{{ $message }}</span>
-        @enderror
-    </div>
-
-    <div id="personalTasks">
+    <div id="personalTasks" class="">
         <div class="task-item">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="labels">Task Name <span class="asterisk">*</span></label>
+                    <label class="labels text-medium">Task Name <span class="asterisk">*</span></label>
                     <input type="text" name="tasks[0][name]"
-                        class="required-field fields error-prone @error('title') border-red-500 @enderror"
+                        class="required-field fields error-prone @error('title') border-red-500 @enderror placeholder:text-medium placeholder:text-slate-400"
                         placeholder="What needs to be done?">
                     @error('tasks.*.name')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -24,17 +15,17 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="labels">Due Date <span class="asterisk">*</span></label>
+                        <label class="labels text-medium">Due Date <span class="asterisk">*</span></label>
                         <input type="date" name="tasks[0][due_date]"
-                            class="required-field fields text-zinc-400 focus:text-black error-prone @error('tasks.*.due_date') border-red-500 @enderror" oninput="this.classList.remove('text-zinc-400'); this.classList.add('text-black');">
+                            class="required-field fields text-medium text-slate-400  focus:text-black error-prone @error('tasks.*.due_date') border-red-500 @enderror placeholder:text-medium placeholder:text-slate-400" oninput="this.classList.remove('text-slate-400'); this.classList.add('text-black');">
                         @error('tasks.*.due_date')
                             <span class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
                     </div>
                     <div>
-                        <label class="labels">Time <span class="asterisk">*</span></label>
+                        <label class="labels text-medium">Time <span class="asterisk">*</span></label>
                         <input type="time" name="tasks[0][due_time]"
-                            class="required-field fields text-zinc-400 focus:text-black error-prone @error('tasks.*.due_time') border-red-500 @enderror"  oninput="this.classList.remove('text-zinc-400'); this.classList.add('text-black');">
+                            class="required-field fields text-medium text-slate-400  focus:text-black error-prone @error('tasks.*.due_time') border-red-500 @enderror placeholder:text-medium placeholder:text-slate-400"  oninput="this.classList.remove('text-slate-400'); this.classList.add('text-black');">
                         @error('tasks.*.due_time')
                             <span class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
@@ -43,15 +34,15 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="labels">Description </label>
-                    <textarea name="tasks[0][description]" class="fields"
+                    <label class="labels text-medium">Description </label>
+                    <textarea name="tasks[0][description]" class="fields placeholder:text-medium placeholder:text-slate-400"
                         placeholder="Add some details..."></textarea>
                 </div>
 
                 <div>
-                    <label class="labels">Priority Level <span class="asterisk">*</span> </label>
+                    <label class="labels text-medium">Priority Level <span class="asterisk">*</span> </label>
                     <select name="tasks[0][priority]"
-                        class="required-field fields text-zinc-400 error-prone @error('tasks.*.priority') border-red-500 @enderror" onchange="this.classList.remove('text-zinc-400'); this.classList.add('text-black');">
+                        class="required-field fields text-medium text-slate-400 error-prone @error('tasks.*.priority') border-red-500 @enderror " onchange="this.classList.remove('text-zinc-400'); this.classList.add('text-black');">
                         <option value="" disabled selected>Select Priority Level
                         </option>
                         <option value="High">High</option>

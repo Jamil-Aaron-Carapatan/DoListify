@@ -16,7 +16,9 @@ class User extends Authenticatable
         'last_name',
         'email',
         'password',
-        'email_verified_at'
+        'email_verified_at',
+        'avatar',
+        'points',
     ];
 
     protected $hidden = [
@@ -40,8 +42,8 @@ class User extends Authenticatable
     public function projects()
     {
         return $this->belongsToMany(Project::class, 'project_members')
-                    ->withPivot('role')
-                    ->withTimestamps();
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     /**
