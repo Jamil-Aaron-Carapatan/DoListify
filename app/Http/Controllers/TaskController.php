@@ -53,12 +53,30 @@ class TaskController extends Controller
         return view('pages.TasksView', compact('project', 'task'));
     }
 
+    public function updateTask(Request $request)
+    {
+        $task = Task::findOrFail($request->task_id);
+        $task->update($request->only('name', 'description'));
 
+        // Update checklist items
+        $task->checklist()->delete();
+        foreach ($request->checklist as $item) {
+            $task->checklist()->create($item);
+        }
+
+        return redirect()->back()->with('success', 'Task updated successfully.');
+    }
     public function create(Request $request)
     {
         $dueDate = $request->query('due_date');
         // You can pass any additional data needed for task creation
         return view('pages.CreateTask', compact('dueDate'));
+    }
+    
+    public function getTask($id)
+    {
+        $task = Task::with('checklist')->findOrFail($id);
+        return response()->json($task);
     }
 
     public function updateStatus(Request $request, Task $task)

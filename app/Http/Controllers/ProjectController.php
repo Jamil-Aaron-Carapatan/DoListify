@@ -10,101 +10,92 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ProjectController extends Controller
 {
 
     public function showAddTask(Request $request)
     {
-        return view('pages.AddTask');
+        $tasks = Task::where('created_by', auth()->id())->get();
+        return view('pages.AddTask',compact('tasks'));
     }
+
     public function store(Request $request)
-{
-    Log::info('Incoming request data:', $request->all());
+    {
+        Log::info('Incoming request data:', $request->all());
 
-    // Determine project_id based on task type
-    $project_id = $request->input('type') === 'personal' ? null : $request->input('project_id');
-
-    try {
-        // Base validation rules
-        $rules = [
-            'title' => 'nullable|string|max:255',
-            'type' => 'required|in:personal',
-            'tasks' => 'required|array', // Tasks should be an array
-            'tasks.*.name' => 'required|string|max:255', // Task name is required, string, and max length of 255
-            'tasks.*.description' => 'nullable|string', // Task description is optional
-            'tasks.*.due_date' => [
-                'nullable',
-                'date',
-                'after_or_equal:today',
-                'before_or_equal:' . now()->addYears(3)->format('Y-m-d') // Due date validation
-            ],
-            'tasks.*.due_time' => [
-                'nullable',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) {
-                    if (now()->format('H:i') > $value) {
-                        $fail('The ' . $attribute . ' must be a time after or equal to the current time.');
-                    }
-                }
-            ],
-            'tasks.*.priority' => 'required|in:High,Medium,Low', // Task priority validation
-            'tasks.*.checklist' => 'nullable|array', // Checklist items are optional
-            'tasks.*.checklist.*.name' => 'nullable|string|max:255', // Each checklist item name is optional and should be a string
-        ];
-
-        // If the task is not personal, we need to validate the project_id
-        if ($request->input('type') !== 'personal') {
-            $rules['project_id'] = 'required|exists:projects,id'; // Validate that project_id exists in the 'projects' table
-        }
-
-        // Custom error messages
-        $messages = [
-            'tasks.*.due_date.after_or_equal' => 'The due date must be a date after or equal to today.',
-            'tasks.*.due_date.before_or_equal' => 'The due date must be a date before or equal to 3 years from now.',
-            'tasks.*.due_time.date_format' => 'The due time must be a valid time format (HH:MM).',
-        ];
-
-        // Validate the incoming request
-        $validated = $request->validate($rules, $messages);
-
-        Log::info('Validated data:', $validated);
-
-        // Handle task creation for each task in the validated data
-        foreach ($validated['tasks'] as $taskData) {
-            // Create the task and associate it with the project using the project_id
-            $task = Task::create([
-                'name' => $taskData['name'],
-                'description' => $taskData['description'] ?? null,
-                'due_date' => $taskData['due_date'] ?? null, // this will be the reminder time
-                'due_time' => $taskData['due_time'] ?? null, // this will be the reminder time
-                'priority' => $taskData['priority'],
-                'project_id' => $project_id, // Associate the task with the project
+        try {
+            // Validate request
+            $validated = $request->validate([
+                'tasks' => 'required|array',
+                'tasks.*.name' => 'required|string|max:255',
+                'tasks.*.priority' => 'required|in:High,Medium,Low',
+                'tasks.*.due_date' => 'nullable|date',
+                'tasks.*.due_time' => 'nullable',
+                'tasks.*.checklist' => 'nullable|array',
+                'tasks.*.description = ' => 'nullable|string|max:500',
+                'tasks.*.checklist.*.name' => 'nullable|string|max:255',
             ]);
 
-            // Save checklist items if provided
-            if (isset($taskData['checklist']) && is_array($taskData['checklist'])) {
-                foreach ($taskData['checklist'] as $checklistItem) {
-                    $task->checklist()->create([
-                        'name' => $checklistItem['name'],
-                        'completed' => false, // Default to not completed
-                    ]);
+            DB::beginTransaction();
+
+            foreach ($validated['tasks'] as $taskData) {
+                // Create task
+                $task = Task::create([
+                    'name' => $taskData['name'],
+                    'priority' => $taskData['priority'],
+                    'due_date' => $taskData['due_date'] ?? null,
+                    'due_time' => $taskData['due_time'] ?? null,
+                    'project_id' => $request->input('project_id'),
+                    'created_by' => auth()->check() ? auth()->id() : null,
+                    'description' => $taskData['description'] ?? null,
+                    'status' => 'To Do'
+                ]);
+
+                // Handle checklist items
+                if (!empty($taskData['checklist'])) {
+                    $checklistItems = array_filter($taskData['checklist'], function($item) {
+                        return !empty($item['name']);
+                    });
+
+                    foreach ($checklistItems as $index => $item) {
+                        $task->checklist()->create([
+                            'name' => $item['name'],
+                            'completed' => false,
+                            'order' => $index + 1
+                        ]);
+                    }
                 }
             }
-        }
-        $project = Project::create([
-            'title' => $validated['title'],
-            'type' => $validated['type'],
-            'created_by' => auth()->id(),
-        ]);
-        // Return success response
-        return response()->json(['success' => 'Tasks created successfully'], 201);
 
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        Log::error('Validation error:', ['errors' => $e->errors()]);
-        return response()->json(['errors' => $e->errors()], 422);
+            DB::commit();
+            
+            // Create notification for task creation
+            Notification::create([
+                'user_id' => auth()->id(),
+                'type' => 'task_created',
+                'message' => 'New tasks have been created successfully.',
+                'link' => '/task/' . $request->input('project_id'),
+                'status' => 'unread'
+            ]);
+
+            return redirect()->back()->with('success', 'Tasks created successfully');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Task creation error:', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+            
+            return redirect()->back()->with('error', 'Failed to create tasks. Please try again.');
+        }
     }
-}
+
+
+
 
 
     public function storeTeamProject(Request $request)

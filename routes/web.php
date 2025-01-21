@@ -30,6 +30,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile/remove-avatar', [SettingsController::class, 'removeAvatar'])->name('profile.removeAvatar');
 
     // Page View Routes
+    Route::get('/tasks/{id}', [TaskController::class, 'getTask']);
+    Route::patch('/tasks', [TaskController::class, 'updateTask'])->name('updateTask');
     Route::get('/DoListify/Dashboard', [ProjectController::class, 'getProjectStats'])->name('dashboard');
     Route::get('/DoListify/Add/Task/', [ProjectController::class, 'showAddTask'])->name('addTask');
     Route::view('/DoListify/Add/Project', 'pages.AddProject')->name('addProject');

@@ -53,12 +53,7 @@ class NotificationController extends Controller
 
     public function getUnreadCount()
     {
-        // Mark all notifications as read when the bell is clicked (optional)
-        Notification::where('user_id', auth()->id())
-            ->where('status', 'unread')
-            ->update(['status' => 'read']); // This marks them as read
-
-        // Now fetch the unread count to return to the frontend
+        // Only get the count without marking as read
         $count = Notification::where('user_id', auth()->id())
             ->where('status', 'unread')
             ->count();

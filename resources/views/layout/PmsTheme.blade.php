@@ -55,7 +55,7 @@
             </div>
             <div class="flex justify-center lg:justify-end gap-6">
                 <button onclick="hideprofileModal()"
-                    class="px-5 py-2 rounded-xl bg-white text-cyan-800 font-bold shadow-lg border transition-all hover:bg-cyan-800">
+                    class="px-5 py-2 rounded-xl bg-white text-cyan-800 font-bold shadow-lg border transition-all hover:bg-zinc-300">
                     Close
                 </button>
             </div>

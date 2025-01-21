@@ -46,9 +46,13 @@
             <!-- Password -->
             <div class="form-group">
                 <div class="relative">
-                    <input type="password" id="reg_password" name="password" norequired
+                    <input type="password" id="reg_password" name="password" required
                         class="shadow-cyan-800/75 @error('password') border-t border-l border-r border-red-500 @enderror appearance-none block w-full px-3 py-2 border-0 rounded-md shadow-md placeholder:text-medium placeholder:text-slate-400 hover:shadow-cyan-500 focus:outline-none focus:border-b-0 focus:shadow-cyan-500 transition-all ease-in-out delay-75"
                         placeholder="Password" oninput="checkPasswordStrength()">
+                    <span class="absolute inset-y-0 right-0 pr-3 p-3 flex cursor-pointer" id="eyeIcon"
+                        style="display: none;" onclick="togglePassword()">
+                        <i class="fa-regular fa-eye-slash text-cyan-800" id="eyeIconClass"></i>
+                    </span>
                     <div id="passwordStrengthBar" class="w-full h-1 mt-2 bg-gray-200 rounded-full">
                         <div id="passwordStrengthIndicator" class="h-full rounded-full"></div>
                     </div>
@@ -57,7 +61,7 @@
                     @enderror
                 </div>
             </div>
-
+            
             <!-- Confirm Password -->
             <div class="form-group">
                 <div class="relative">

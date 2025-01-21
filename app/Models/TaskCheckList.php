@@ -8,10 +8,21 @@ class TaskChecklist extends Model
 {
     use HasFactory;
 
+    protected $table = 'task_checklists';
+
     protected $fillable = [
         'task_id',
         'name',
         'completed',
+        'order'
+    ];
+
+    protected $casts = [
+        'completed' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'completed' => false,
     ];
 
     public function task()
