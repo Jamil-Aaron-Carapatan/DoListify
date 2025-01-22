@@ -5,29 +5,6 @@
 @section('content')
     <main id="main-content" class="main-content">
         <div class="rounded-2xl px-2 pb-5 space-y-3">
-            <div class="content-container shadow-lg">
-                <!-- Project Type Selection -->
-                <div class="animate-fade-in">
-                    <label class="labels text-medium">Project Type</label>
-                    <div class="flex gap-4">
-                        <button type="button" data-type="personal"
-                            class="project-type-btn text-medium bg-cyan-800 text-white">
-                            Personal Task&nbsp;&nbsp;<i class="fa-solid fa-user"></i>
-                        </button>
-                        <button type="button" data-type="team"
-                            class="project-type-btn text-medium bg-zinc-300/80 text-gray-700">
-                            Team Project&nbsp;&nbsp;<i class="fas fa-users"></i>
-                        </button>
-                    </div>
-                    <input type="hidden" name="type" id="projectType" value="personal">
-                </div>
-            </div>
-            @if (
-                $projects &&
-                    $projects->isNotEmpty() &&
-                    $projects->some(function ($project) {
-                        return $project->tasks->isNotEmpty();
-                    }))
                 <div class="buttons flex animate-fade-in">
                     <div class="relative">
                         <button id="filterButton"
@@ -192,7 +169,7 @@
                 <div class="pt-2 border-t text-medium text-sm text-gray-200">
                     {{ $projects->links('pagination::custom-tailwind') }}
                 </div>
-            @else
+                <!--
                 <div class="flex flex-col justify-center items-center">
                     <img src="/storage/icons/empty.svg" alt="Description of SVG" class="">
                     <h4 class="text-medium text-sm text-gray-400 text-center">Oops, looks like you don't have any tasks yet.
@@ -203,8 +180,8 @@
                     <a href="{{ route('addProject') }}"
                         class="inline-flex items-center mt-4 px-6 py-3 bg-zinc-900 text-medium text-sm text-white text-md font-medium rounded-full shadow hover:bg-zinc-800 transition ease-in-out">Create
                         Task</a>
-                </div>
-            @endif
+                </div> -->
+ 
         </div>
     </main>
 @endsection

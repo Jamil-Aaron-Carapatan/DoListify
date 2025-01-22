@@ -27,10 +27,21 @@
                         class="nav-item flex items-center mx-4 pl-3 rounded-xl gap-5 hover:bg-[#626161] ease-in duration-100"
                         aria-label="dashboard">
                         <div>
-                            <img src="{{ asset('/storage/icons/home.svg') }}" alt="label icon"
-                                viewBox="0 0 24 24" class="w-5 h-5">
+                            <img src="{{ asset('/storage/icons/home.svg') }}" alt="label icon" viewBox="0 0 24 24"
+                                class="w-5 h-5">
                         </div>
                         <span class="text-medium text-white pt-3 pb-3">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('projects') }}"
+                        class="nav-item flex items-center mx-4 pl-3 rounded-xl gap-5 hover:bg-[#626161] ease-in duration-100"
+                        aria-label="To Do">
+                        <div>
+                            <img src="{{ asset('/storage/icons/todo.svg') }}" alt="label icon" viewBox="0 0 24 24"
+                                class="w-6 h-6">
+                        </div>
+                        <span class="text-medium text-white pt-3 pb-3">To Do</span>
                     </a>
                 </li>
                 <li>
@@ -45,14 +56,14 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('projects') }}"
+                    <a href="{{ route('addProject') }}"
                         class="nav-item flex items-center mx-4 pl-3 rounded-xl gap-5 hover:bg-[#626161] ease-in duration-100"
-                        aria-label="To Do">
+                        aria-label="addproject">
                         <div>
-                            <img src="{{ asset('/storage/icons/projects.svg') }}" alt="label icon"
-                                viewBox="0 0 24 24" class="w-5 h-5">
+                            <img src="{{ asset('/storage/icons/addteam.svg') }}" alt="label icon" viewBox="0 0 24 24"
+                                class="w-[22px] h-[22px]">
                         </div>
-                        <span class="text-medium text-white pt-3 pb-3">To Do</span>
+                        <span class="text-medium text-white pt-3 pb-3">Create Project</span>
                     </a>
                 </li>
                 <li>
@@ -60,8 +71,8 @@
                         class="nav-item flex items-center mx-4 pl-3 rounded-xl gap-5 hover:bg-[#626161] ease-in duration-100"
                         aria-label="team">
                         <div>
-                            <img src="{{ asset('/storage/icons/team.svg') }}" alt="label icon"
-                                viewBox="0 0 24 24" class="w-5 h-5">
+                            <img src="{{ asset('/storage/icons/team.svg') }}" alt="label icon" viewBox="0 0 24 24"
+                                class="w-5 h-5">
                         </div>
                         <span class="text-medium text-white pt-3 pb-3">Teams</span>
                     </a>
@@ -71,8 +82,8 @@
                         class="nav-item flex items-center mx-4 pl-3 rounded-xl gap-5 hover:bg-[#626161] ease-in duration-100"
                         aria-label="calendar">
                         <div>
-                            <img src="{{ asset('/storage/icons/calendar.svg') }}" alt="label icon"
-                                viewBox="0 0 24 24" class="w-5 h-5">
+                            <img src="{{ asset('/storage/icons/calendar.svg') }}" alt="label icon" viewBox="0 0 24 24"
+                                class="w-5 h-5">
                         </div>
                         <span class="text-medium text-white pt-3 pb-3">Calendar</span>
                     </a>

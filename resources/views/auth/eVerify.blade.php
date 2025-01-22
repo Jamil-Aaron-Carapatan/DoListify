@@ -6,7 +6,7 @@
         <div>
             <h2 class="text-center text-3xl font-bold text-cyan-800">Verify its you.</h2>
             <p class="text-center text-sm mt-2 text-gray-400">
-                Please check your inbox and enter the code sent to <strong>{{ session('registration_complete') }}</strong>.
+                Almost there! Check your registered email for a verification code and drop it below.
             </p>
         </div>
         <form id="emailVerificationForm" class="" value="{{ route('auth.eVerify') }}" method="POST">

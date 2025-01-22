@@ -172,6 +172,7 @@ class ProjectController extends Controller
     }
     public function projectView(Request $request)
     {
+        $tasks = Task::where('created_by', auth()->id())->get();
         $userId = auth()->id();
 
         $query = Project::where(function ($query) use ($userId) {
@@ -215,7 +216,7 @@ class ProjectController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('pages.Projects', compact('projects'));
+        return view('pages.Projects', compact('projects', 'tasks'));
     }
 
     //this is for the team page

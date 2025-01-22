@@ -35,23 +35,22 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                        <!-- Upload Form -->
-                        <form action="{{ route('profile.update') }}"
-                            method="POST" enctype="multipart/form-data"
-                            class="flex flex-col sm:flex-row items-center gap-4">
-                            @csrf
-                            @method('POST')
-                            <label class="flex items-center cursor-pointer">
-                                <input type="file" name="avatar" accept="image/*" class="hidden"
-                                    onchange="this.form.submit()">
-                                <div
-                                    class="w-full sm:w-auto whitespace-nowrap px-8 py-2 md:py-3 rounded-xl text-normal
+                            <!-- Upload Form -->
+                            <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data"
+                                class="flex flex-col sm:flex-row items-center gap-4">
+                                @csrf
+                                @method('POST')
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="file" name="avatar" accept="image/*" class="hidden"
+                                        onchange="this.form.submit()">
+                                    <div
+                                        class="w-full sm:w-auto whitespace-nowrap px-8 py-2 md:py-3 rounded-xl text-normal
                                              hover:from-indigo-700 hover:to-indigo-600 transition-all duration-300 
                                              shadow-md hover:shadow-lg gap-2 text-gray-600 border border-gray-300">
-                                    <i class="fa-solid fa-arrow-up-from-bracket mr-2"></i>
-                                    <span>Upload Photo</span>
-                                </div>
-                            </label>
+                                        <i class="fa-solid fa-arrow-up-from-bracket mr-2"></i>
+                                        <span>Upload Photo</span>
+                                    </div>
+                                </label>
                             </form>
                             @if (auth()->user()->avatar)
                                 <!-- Remove Photo Button -->
@@ -71,18 +70,18 @@
                     </div>
                 </div>
 
-                <div class="border-t-2 grid grid-cols-1 lg:grid-cols-2 gap-3 pt-5">
+                <div class="border-t-2 grid grid-cols-1 lg:grid-cols-2 gap-6 pt-5">
                     <!-- Edit Name Section -->
                     <div class="bg-white col-span-1 p-6 rounded-2xl shadow-md">
                         <h2 class="text-2xl text-large text-gray-500 mb-4">Edit Name</h2>
                         <form id="nameForm" action="{{ route('name.update') }}" method="POST">
                             @csrf
-                            <div class="space-y-3">
+                            <div class="space-y-4">
                                 <div>
                                     <label class="block text-medium text-gray-500">First Name</label>
                                     <input type="text" name="first_name"
                                         placeholder="{{ old('first_name', auth()->user()->first_name) }}"
-                                        class="w-full p-2 border rounded-lg {{ $errors->has('last_name') ? 'border-red-500' : 'border-cyan-700' }}">
+                                        class="w-full p-2 border rounded-lg {{ $errors->has('first_name') ? 'border-red-500' : 'border-cyan-700' }}">
                                     @error('first_name')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
@@ -96,11 +95,11 @@
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
-                                <div class="flex justify-end mt-4">
+                                <div class="flex justify-end">
                                     <button type="button" onclick="showNameConfirmation()"
                                         class="px-4 py-2 rounded-lg font-medium text-sm
-                                    bg-cyan-700 text-white hover:bg-cyan-600
-                                    transition-all duration-300 shadow-md hover:shadow-lg">
+                                        bg-cyan-700 text-white hover:bg-cyan-600
+                                        transition-all duration-300 shadow-md hover:shadow-lg">
                                         Update Name
                                     </button>
                                 </div>
@@ -109,11 +108,11 @@
                     </div>
 
                     <!-- Password Change Section -->
-                    <div class="bg-white col-span-1 p-6 rounded-2xl shadow-md mb-6">
+                    <div class="bg-white col-span-1 p-6 rounded-2xl shadow-md">
                         <h2 class="text-2xl text-large text-gray-500 mb-4">Change Password</h2>
                         <form id="passwordForm" action="{{ route('password.update') }}" method="POST">
                             @csrf
-                            <div class="space-y-3">
+                            <div class="space-y-4">
                                 <div>
                                     <label class="block text-medium text-gray-500">Current Password</label>
                                     <input type="password" name="current_password" placeholder="Enter your current password"
@@ -140,11 +139,11 @@
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
-                                <div class="flex justify-end mt-4">
+                                <div class="flex justify-end">
                                     <button type="button" onclick="showPasswordConfirmation()"
                                         class="px-4 py-2 rounded-lg font-medium text-sm
-                                    bg-cyan-700 text-white hover:bg-cyan-600
-                                    transition-all duration-300 shadow-md hover:shadow-lg">
+                                        bg-cyan-700 text-white hover:bg-cyan-600
+                                        transition-all duration-300 shadow-md hover:shadow-lg">
                                         Update Password
                                     </button>
                                 </div>
@@ -152,6 +151,7 @@
                         </form>
                     </div>
                 </div>
+
             </div>
         </div>
 
