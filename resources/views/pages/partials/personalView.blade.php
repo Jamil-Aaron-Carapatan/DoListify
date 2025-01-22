@@ -46,8 +46,8 @@
                     Things To Do
                 </h5>
 
-                <button type="submit" class="px-4 py-2 bg-cyan-800 text-white rounded-md hover:bg-cyan-900 transition"
-                    onclick="SubmitEditForm()">Save</button>
+                <button type="button" class="px-4 py-2 bg-cyan-800 text-white rounded-md hover:bg-cyan-900 transition"
+                    onclick="openSaveModal()">Save</button>
             </div>
 
             <!-- Main Content -->
@@ -89,14 +89,28 @@
                                         oninput="autoExpand(this)">{{ $currentTask->description }}</textarea>
                                     <div id="checklist-container">
                                         @foreach ($currentTask->checklist as $item)
-                                            <div class="mt-2 checklist-item" data-id="{{ $item->id }}">
+                                            <div class="mt-2 checklist-item group cursor-default"
+                                                data-id="{{ $item->id }}">
                                                 <div class="flex items-center space-x-2">
                                                     <input type="checkbox" id="checklist-item-{{ $item->id }}"
-                                                        class="checkbox-item" {{ $item->completed ? 'checked' : '' }}
+                                                        class="checkbox-item cursor-pointer"
+                                                        {{ $item->completed ? 'checked' : '' }}
                                                         onchange="toggleChecklistItem({{ $item->id }}, this.checked)">
                                                     <input type="text" value="{{ $item->name }}"
                                                         class="w-full border-none text-medium text-zinc-600 focus:outline-none checklist-text {{ $item->completed ? 'line-through' : '' }}"
                                                         oninput="markChecklistItemDirty({{ $item->id }}, this.value)">
+
+                                                    <!-- Hidden input for deletion flag -->
+                                                    <input type="hidden" name="items[{{ $item->id }}][deleted]"
+                                                        class="deleted-flag " value="{{ $item->deleted ? '1' : '0' }}">
+
+
+                                                    <!-- Add delete button -->
+                                                    <button type="button"
+                                                        class="delete-button text-red-500 text-lg cursor-pointer text-medium flex transition-all items-center p-0 m-0 opacity-0 group-hover:opacity-100"
+                                                        onclick="deleteChecklistItem({{ $item->id }})">
+                                                        <i class="fa-solid fa-minus"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -371,6 +385,15 @@
 </div>
 <script src="{{ asset('storage/js/personal.js') }}"></script>
 <script>
+    function openSaveModal() {
+        document.getElementById('saveChangesModal').style.display = 'flex';
+    }
+
+    function hidesaveChanges() {
+        document.getElementById('saveChangesModal').style.display = 'none';
+    }
+
+
     function addChecklistItem() {
         const container = document.getElementById('checklist-container');
         const newItemId = `new-${Date.now()}`; // Temporary unique ID
@@ -384,21 +407,18 @@
         container.insertAdjacentHTML('beforeend', newItemHtml);
     }
 
-    // JavaScript to mark an item for deletion
-    function markForDeletion(itemId) {
-        console.log("Marking for deletion: " + itemId); // Debug log
+    function deleteChecklistItem(itemId) {
+        let itemContainer = document.querySelector(`[data-id="${itemId}"]`);
+        if (itemContainer) {
+            let deletedInput = itemContainer.querySelector('input[name="items[' + itemId + '][deleted]"]');
+            if (deletedInput) {
+                deletedInput.value = '1'; // Mark as deleted
+            }
 
-        const checklistItem = document.querySelector(`.checklist-item[data-id="${itemId}"]`);
-        const deleteFlagInput = checklistItem.querySelector('.deleted-flag'); // Find the deleted flag input field
-
-        // Mark the item for deletion by setting the flag
-        deleteFlagInput.value = '1'; // 1 means deleted
-
-        // Optionally, hide the item visually
-        checklistItem.classList.add('hidden');
+            // Optionally, hide the item for visual feedback
+            itemContainer.style.display = 'none';
+        }
     }
-
-
     // On form submission, deleted items will be included automatically in the request
     document.getElementById('taskDescriptionForm').addEventListener('submit', function(e) {
         const deletedItems = document.querySelectorAll('input[name="deleted_items[]"][value]');
@@ -424,15 +444,27 @@
 
     function SubmitEditForm() {
         const description = document.getElementById('text-desc').value;
-        const items = Array.from(document.querySelectorAll('.checklist-item')).map(item => ({
-            id: item.dataset.id,
-            name: item.querySelector('.checklist-text').value,
-            completed: item.querySelector('.checkbox-item').checked,
-        }));
+
+        // Collect all checklist items, including the 'deleted' flag
+        const items = Array.from(document.querySelectorAll('.checklist-item')).map(item => {
+            const itemId = item.dataset.id;
+            const name = item.querySelector('.checklist-text').value;
+            const completed = item.querySelector('.checkbox-item').checked;
+            const deletedFlag = item.querySelector('input[name="items[' + itemId + '][deleted]"]')?.value ||
+                '0'; // Get the deleted flag
+
+            return {
+                id: itemId,
+                name: name,
+                completed: completed,
+                deleted: deletedFlag === '1' ? true : false, // If the deleted flag is '1', mark it as deleted
+            };
+        });
 
         // Retrieve the task ID
         const taskId = document.getElementById('taskDescriptionForm').dataset.taskId;
 
+        // Send the data to the backend
         fetch(`/tasks/update/${taskId}`, {
                 method: 'POST',
                 headers: {
@@ -441,7 +473,7 @@
                 },
                 body: JSON.stringify({
                     description,
-                    items
+                    items,
                 }),
             })
             .then(response => {
@@ -458,5 +490,6 @@
             .catch(error => {
                 console.error('Error saving form:', error.message);
             });
+        document.getElementById('saveChangesModal').style.display = 'none'
     }
 </script>

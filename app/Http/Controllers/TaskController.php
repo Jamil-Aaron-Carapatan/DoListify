@@ -166,17 +166,14 @@ class TaskController extends Controller
             $description = isset($validated['description']) ? trim($validated['description']) : null;
             $task->description = $description;
 
-            // Update checklist items (creating, updating, or nullifying as needed)
+            // Update checklist items (creating, updating or deleting as needed)
             if (isset($validated['items'])) {
                 foreach ($validated['items'] as $itemData) {
-                    if (isset($itemData['deleted']) && $itemData['deleted'] == 1) {
-                        // If the 'deleted' flag is 1, nullify the checklist item
+                    if (isset($itemData['deleted']) && $itemData['deleted'] == true) {
+                        // If the 'deleted' flag is set, delete the checklist item
                         $item = ChecklistItem::find($itemData['id']);
                         if ($item && $item->task_id == $task->id) {
-                            // Nullify the item instead of deleting
-                            $item->name = null;
-                            $item->completed = null; // Or set it to whatever you want as "deleted" state
-                            $item->save();  // Save the changes
+                            $item->delete();  // Actually delete the item from the database
                         }
                     } else {
                         if (isset($itemData['id']) && str_starts_with($itemData['id'], 'new-')) {
@@ -207,5 +204,4 @@ class TaskController extends Controller
             return response()->json(['success' => false, 'message' => 'There was an error updating the task.'], 500);
         }
     }
-
 }
