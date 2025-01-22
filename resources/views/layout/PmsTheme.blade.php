@@ -8,6 +8,7 @@
     <script src="http://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/storage/css/dist/output.css" as="style">
     <link rel="icon" href="/storage/elements/Icon.png" type="image/png">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="/storage/css/dist/pmspages.css" as="style">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>

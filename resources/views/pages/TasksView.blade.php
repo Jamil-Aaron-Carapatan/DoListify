@@ -5,19 +5,14 @@
 @section('content')
     <div id="main-content" class="main-content">
         <div class="w-full flex items-center justify-between px-2 py-2">
-            <a href="{{ route('projects') }}"
+            <a href="{{ url()->previous() }}"
                 class="flex items-center gap-2 py-2 px-4 rounded-md bg-cyan-800 w-auto text-white hover:bg-cyan-700 transition-colors duration-200">
                 <i class="fa-solid fa-arrow-left-long"></i>
             </a>
         </div>
         <div class="rounded-2xl mb-3 pb-4 lg:pb-0 bg-white shadow-md min-h-[calc(100vh-132px)] ">
             <!-- if Personal Project -->
-            @if ($project->type === 'Personal')
-                @include('pages.partials.personalView', ['task' => $task])
-            @else
-                <!-- if the project is team -->
-                @include('pages.partials.teamView')
-            @endif
+            @include('pages.partials.personalView', ['task' => $currentTask])
         </div>
     </div>
 @endsection

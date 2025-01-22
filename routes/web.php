@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,14 +42,16 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/DoListify/Settings', 'pages.Settings')->name('settings');
 
     // Project Related Routes
-    Route::get('/DoListify/Task/To Do',[ProjectController::class, 'projectView'] )->name('projects');
+    Route::get('/DoListify/Task/To Do', [ProjectController::class, 'projectView'])->name('projects');
     Route::post('/DoListify/Add-Task/personal', [ProjectController::class, 'store'])->name('addTask.post');
     Route::post('/DoListify/Add-Project/team', [ProjectController::class, 'storeTeamProject'])->name('projects.storeTeam');
     Route::get('/DoListify/Projects/filter', [ProjectController::class, 'filter'])->name('projects.filter');
     Route::get('/DoListify/search-projects', [ProjectController::class, 'searchProjects'])->name('search.projects');
 
     // Task Related Routes
-    Route::match(['get', 'post'], '/DoListify/Task/{projectId}', [TaskController::class, 'taskview'])->name('task');
+    Route::match(['get', 'post'], '/TaskView/{id}', [TaskController::class, 'show'])->name('task.view');
+    Route::post('/tasks/update/{taskId}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::post('/tasks/{id}/comment', [TaskController::class, 'addComment'])->name('tasks.comment');
     Route::get('/DoListify/Task/create', [TaskController::class, 'create'])->name('tasks.create');
     Route::post('/task/{projectId}/attachment', [TaskController::class, 'storeAttachment'])->name('task.uploadAttachment');
 
@@ -68,6 +71,9 @@ Route::middleware(['auth'])->group(function () {
     // Settings Routes
     Route::post('/settings/update-name', [SettingsController::class, 'updateName'])->name('name.update');
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('password.update');
+
+
+   
 });
 
 // Registration verification routes

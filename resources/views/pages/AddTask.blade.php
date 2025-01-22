@@ -20,7 +20,8 @@
                 <form id="completeForm" action="{{ route('addTask.post') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="type" value="personal">
-                    <input type="hidden" name="project_id" value="{{ $project_id ?? '' }}">
+                    <input type="hidden" name="created_by" value="{{ Auth::id() }}">
+                    <input type="hidden" name="project_id" value="{{ request('project_id') }}">
 
                     <!-- Title Input -->
                     <input type="text" name="tasks[0][name]" placeholder="Title"
@@ -29,7 +30,7 @@
                     <!--Text Area -->
                     <textarea id="text-desc" name="tasks[0][description]" placeholder="Take a note..."
                         class="w-full mt-2 border-b text-medium text-lg focus:outline-none focus:border-cyan-800 placeholder:text-medium placeholder:text-lg placeholder:text-slate-400 overflow-hidden"
-                        rows="3" style="max-height: 100px;" oninput="autoExpand(this)"></textarea>
+                        rows="3" style="max-height: 500px;" oninput="autoExpand(this)"></textarea>
 
                     <!-- Checklist -->
                     <div id="checklist-container" class="space-y-2 mt-3">
@@ -37,13 +38,13 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="flex items-center justify-between mt-4">
+                    <div class="flex items-center justify-between mt-6">
                         <!-- Icon Buttons -->
                         <div class="flex items-center gap-3">
-                            <!-- Due Date -->
                             <div class="relative">
-                                <button type="button" class="flex items-center p-2 rounded-full hover:bg-gray-100"
-                                    onclick="toggleDropdown('due-date-dropdown')" title="Set reminders">
+                                <button type="button" id="due-date-button"
+                                    class="flex items-center p-2 rounded-full hover:bg-gray-100"
+                                    onclick="toggleDropdown('due-date-dropdown')" title="Set Due Date">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600"
                                         viewBox="0 0 24 24" fill="currentColor">
                                         <path fill-rule="evenodd"
@@ -52,21 +53,25 @@
                                     </svg>
                                 </button>
                                 <div id="due-date-dropdown"
-                                    class="absolute hidden bg-white shadow-md rounded-md mt-2 p-3 z-10">
-                                    <label class="block text-sm font-medium">Due Date:</label>
-                                    <input type="date" name="tasks[0][due_date]"
-                                        class="mt-1 w-full border-gray-300 rounded-md focus:ring-cyan-800 focus:border-cyan-800">
-                                    <label class="block text-sm font-medium mt-2">Due Time:</label>
-                                    <input type="time" name="tasks[0][due_time]"
-                                        class="mt-1 w-full border-gray-300 rounded-md focus:ring-cyan-800 focus:border-cyan-800">
+                                    class="absolute hidden bg-white shadow-md rounded-md mt-2 p-4 z-10 w-64">
+                                    <p class="block text-sm font-medium text-gray-700 mb-2">Set Due Date & Time:</p>
+                                    <label for="due-date-input" class="text-sm font-medium text-gray-600 block">Date</label>
+                                    <input type="date" id="due-date-input" name="tasks[0][due_date]"
+                                        class="mt-1 w-full border-gray-300 rounded-md focus:ring-cyan-800 focus:border-cyan-800 px-2 py-1">
+                                    <label for="due-time-input"
+                                        class="text-sm font-medium text-gray-600 block mt-3">Time</label>
+                                    <input type="time" id="due-time-input" name="tasks[0][due_time]"
+                                        class="mt-1 w-full border-gray-300 rounded-md focus:ring-cyan-800 focus:border-cyan-800 px-2 py-1">
+                                    <button type="button"
+                                        class="mt-4 px-4 py-2 bg-cyan-800 text-white rounded-md hover:bg-cyan-900 transition w-full"
+                                        onclick="saveDueDate()">Set</button>
                                 </div>
-
                             </div>
-
-                            <!-- Priority -->
+                            <!-- Priority Dropdown -->
                             <div class="relative">
-                                <button type="button" class="flex items-center p-2 rounded-full hover:bg-gray-100"
-                                    onclick="toggleDropdown('priority-dropdown')" title="Set reminders">
+                                <button type="button" id="priority-button"
+                                    class="flex items-center p-2 rounded-full hover:bg-gray-100"
+                                    onclick="toggleDropdown('priority-dropdown')" title="Set Priority">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600"
                                         viewBox="0 0 20 20" fill="currentColor">
                                         <path
@@ -74,16 +79,29 @@
                                     </svg>
                                 </button>
                                 <div id="priority-dropdown"
-                                    class="absolute hidden bg-white shadow-md rounded-md mt-2 p-3 z-10">
-                                    <label class="block text-sm font-medium">Priority:</label>
-                                    <select name="tasks[0][priority]"
-                                        class="mt-1 w-full border-gray-300 rounded-md focus:ring-cyan-800 focus:border-cyan-800">
-                                        <option value="High">High</option>
-                                        <option value="Medium">Medium</option>
-                                        <option value="Low">Low</option>
-                                    </select>
+                                    class="absolute hidden bg-white shadow-md rounded-md mt-2 p-4 z-10 w-48">
+                                    <p class="block text-sm font-medium text-gray-700 mb-2">Set Priority:</p>
+                                    <ul class="space-y-2">
+                                        <li>
+                                            <button type="button"
+                                                class="w-full text-left px-4 py-2 rounded-md hover:bg-cyan-100 text-gray-800"
+                                                onclick="setPriority('High')">High</button>
+                                        </li>
+                                        <li>
+                                            <button type="button"
+                                                class="w-full text-left px-4 py-2 rounded-md hover:bg-cyan-100 text-gray-800"
+                                                onclick="setPriority('Medium')">Medium</button>
+                                        </li>
+                                        <li>
+                                            <button type="button"
+                                                class="w-full text-left px-4 py-2 rounded-md hover:bg-cyan-100 text-gray-800"
+                                                onclick="setPriority('Low')">Low</button>
+                                        </li>
+                                    </ul>
                                 </div>
+                                <input type="hidden" id="priority-input" name="tasks[0][priority]" value="">
                             </div>
+                            <!-- checklist button -->
                             <div class="relative">
                                 <button type="button" class="flex items-center p-2 rounded-full hover:bg-gray-100"
                                     onclick="addChecklistItem()" title="New List">
@@ -95,7 +113,6 @@
                                 </button>
                             </div>
                         </div>
-
                         <!-- Submit Button -->
                         <button type="submit"
                             class="px-4 py-2 bg-cyan-800 text-white rounded-md hover:bg-cyan-900 transition">
@@ -104,66 +121,24 @@
                     </div>
                 </form>
             </div>
-            <div class="bg-white rounded-2xl p-6 mx-auto space-y-2 relative mt-4 ">
+            <div class="bg-white rounded-2xl p-8 mx-auto space-y-2 relative mt-3">
                 <div id="tasks-container" class="grid grid-cols-3 gap-5">
                     @foreach ($tasks as $task)
-                        <div class="border border-zinc-500/20 rounded-lg p-4 cursor-pointer bg-gradient-to-r from-cyan-100 to-blue-100 hover:shadow-lg transition-shadow duration-300 group"
-                            onclick="showTaskModal({{ $task->id }})">
+                        <a href="{{ route('task.view', ['id' => $task->id]) }}"
+                            class="border border-zinc-500/20 rounded-lg p-4 cursor-pointer bg-gradient-to-r from-cyan-100 to-blue-100 hover:shadow-lg transition-shadow duration-300 group">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-medium text-lg font-semibold text-cyan-800">{{ $task->name }}</h3>
                                 <p
-                                    class="text-sm text-large text-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    class="text-[12px] text-medium text-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                     {{ $task->status }}
                                 </p>
                             </div>
                             <p class="text-sm text-large text-gray-600 mt-2">{{ Str::limit($task->description, 50) }}</p>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
             </div>
         </div>
-        <div id="task-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
-            <div class="bg-white p-8 rounded-2xl shadow-lg max-w-md mx-auto animate-appear space-y-6">
-                <form id="editTaskForm" method="POST" action="{{ route('updateTask') }}">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="task_id" id="task-id">
-
-                    <!-- Task Title -->
-                    <h3 id="task-title" class="text-2xl font-bold text-cyan-800">Task Title</h3>
-
-                    <!-- Task Description -->
-                    <p id="task-desc" name="description" class="text-gray-600">Task Description</p>
-
-                    <!-- Checklist -->
-                    <div class="space-y-3">
-                        <h4 class="font-semibold text-lg">Checklist:</h4>
-                        <div id="checklist-container" class="space-y-2">
-                            <!-- Checklist items will be dynamically added here -->
-                        </div>
-                        <button type="button" onclick="addChecklistItem()"
-                            class="text-cyan-700 hover:underline text-sm">
-                            + Add Item
-                        </button>
-                    </div>
-
-                    <!-- Status and Priority -->
-                    <div class="flex justify-between items-center mt-4">
-                        <p><strong>Status:</strong> <span id="task-status" class="text-gray-700">In Progress</span></p>
-                        <p><strong>Priority:</strong> <span id="task-priority" class="text-gray-700">High</span></p>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex justify-end gap-4 mt-6">
-                        <button type="button" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-                            onclick="closeTaskModal()">Close</button>
-                        <button type="submit"
-                            class="bg-cyan-800 text-white px-4 py-2 rounded hover:bg-cyan-700">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
     @endsection
 </body>
 
@@ -181,12 +156,12 @@
     function addChecklistItem() {
         const checklistContainer = document.getElementById('checklist-container');
         const checklistItem = document.createElement('div');
-        checklistItem.classList.add('flex', 'items-center', 'gap-2', 'mt-2');
+        checklistItem.classList.add('flex', 'items-center', 'gap-2', 'mt-3');
         checklistItem.innerHTML = `
             <input 
                 type="text" 
                 name="tasks[0][checklist][${checklistCounter}][name]" 
-                class="flex-1 border-b focus:outline-none placeholder-gray-500"
+                class="flex-1 border-b py-2 focus:outline-none placeholder-gray-500"
                 placeholder="List item">
             <button 
                 type="button" 
@@ -204,103 +179,35 @@
     function toggleDropdown(id) {
         const dropdown = document.getElementById(id);
         dropdown.classList.toggle('hidden');
-
-        document.addEventListener('click', function(event) {
-            if (!dropdown.contains(event.target) && !event.target.closest(
-                    `[onclick="toggleDropdown('${id}')"]`)) {
-                dropdown.classList.add('hidden');
-            }
-        }, {
-            once: true
-        });
-    }
-
-    function showTaskModal(taskId) {
-        // Fetch the task data using Ajax
-        fetch(`/tasks/${taskId}`)
-            .then(response => response.json())
-            .then(data => {
-                // Populate the modal with task data
-                document.getElementById('task-id').value = data.id;
-                document.getElementById('task-title').textContent = data.name;
-                document.getElementById('task-desc').textContent = data.description;
-
-                // Populate checklist items
-                const checklistContainer = document.getElementById('checklist-container');
-                checklistContainer.innerHTML = ''; // Clear existing items
-                data.checklist.forEach((item, index) => {
-                    const checklistItem = document.createElement('div');
-                    checklistItem.classList.add('flex', 'items-center', 'gap-2');
-                    checklistItem.innerHTML = `
-                    <input type="checkbox" 
-                        name="checklist[${index}][completed]" 
-                        ${item.completed ? 'checked' : ''} 
-                        onchange="toggleChecklistItem(this)">
-                    <input type="text" 
-                        name="checklist[${index}][name]" 
-                        value="${item.name}" 
-                        class="flex-1 border-b focus:outline-none ${
-                            item.completed ? 'line-through text-gray-500' : ''
-                        }">
-                    <button type="button" class="text-red-500 hover:text-red-700" onclick="this.parentElement.remove()">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                `;
-                    checklistContainer.appendChild(checklistItem);
-                });
-
-                // Populate status and priority
-                document.getElementById('task-status').textContent = data.status || 'Not set';
-                document.getElementById('task-priority').textContent = data.priority || 'None';
-
-                // Show the modal
-                document.getElementById('task-modal').style.display = 'flex';
-            })
-            .catch(error => {
-                console.error('Error fetching task:', error);
-            });
-    }
-
-    function closeTaskModal() {
-        document.getElementById('task-modal').style.display = 'none';
-    }
-
-    function toggleChecklistItem(checkbox) {
-        const textField = checkbox.nextElementSibling;
-        if (checkbox.checked) {
-            textField.classList.add('line-through', 'text-gray-500');
+        if (!dropdown.classList.contains('hidden')) {
+            document.addEventListener('click', outsideClickHandler);
         } else {
-            textField.classList.remove('line-through', 'text-gray-500');
+            document.removeEventListener('click', outsideClickHandler);
         }
     }
 
-    function addChecklistItem() {
-        const checklistContainer = document.getElementById('checklist-container');
-        const index = checklistContainer.children.length; // Get the new index
-        const checklistItem = document.createElement('div');
-        checklistItem.classList.add('flex', 'items-center', 'gap-2');
-        checklistItem.innerHTML = `
-        <input type="checkbox" 
-            name="checklist[${index}][completed]" 
-            onchange="toggleChecklistItem(this)">
-        <input type="text" 
-            name="checklist[${index}][name]" 
-            placeholder="New item" 
-            class="flex-1 border-b focus:outline-none">
-        <button type="button" class="text-red-500 hover:text-red-700" onclick="this.parentElement.remove()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2">
-                <path d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-    `;
-        checklistContainer.appendChild(checklistItem);
+    // Close dropdown when clicking outside
+    function outsideClickHandler(event) {
+        const dueDateDropdown = document.getElementById('due-date-dropdown');
+        const dueDateButton = document.getElementById('due-date-button');
+        const priorityDropdown = document.getElementById('priority-dropdown');
+        const priorityButton = document.getElementById('priority-button');
+
+        if (!dueDateDropdown.contains(event.target) && !dueDateButton.contains(event.target)) {
+            dueDateDropdown.classList.add('hidden');
+        }
+        if (!priorityDropdown.contains(event.target) && !priorityButton.contains(event.target)) {
+            priorityDropdown.classList.add('hidden');
+        }
+    }
+
+    // Save due date and time
+    function saveDueDate() {
+        const date = document.getElementById('due-date-input').value;
+        const time = document.getElementById('due-time-input').value;
+        alert(`Due Date: ${date}\nDue Time: ${time}`);
+        toggleDropdown('due-date-dropdown');
     }
 </script>
-
-
 
 </html>

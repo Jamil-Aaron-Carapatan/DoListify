@@ -8,19 +8,31 @@ use Illuminate\Http\Request;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ChecklistItem;
 
 class TaskController extends Controller
 {
-    public function taskview($projectId, Request $request)
+    public function taskview(Task $task)
     {
-        // Fetch project by ID with tasks and team members
-        $project = Project::with(['tasks', 'members', 'comments.user'])->findOrFail($projectId);
-        $task = $project->tasks->first(); // Fetch the first task or a specific task
+        $tasks = Task::where('created_by', auth()->id())->get();
+        return view('TasksView', compact('tasks'));
+    }
+
+    public function show($id, Request $request)
+    {
+        // Fetch the requested task with related comments
+        $currentTask = Task::with('task_comments.user') // Load related task comments and user
+            ->where('id', $id)
+            ->where('created_by', auth()->id())
+            ->firstOrFail();
+
+        // Fetch all tasks for the user
+        $tasks = Task::where('created_by', auth()->id())->get();
 
         // Handle comment form submission
         if ($request->isMethod('post')) {
-            // Validate the request
-            $request->validate([
+            // Validate the comment and file upload (if any)
+            $validated = $request->validate([
                 'comment' => 'nullable|string',
                 'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,zip|max:10240', // Validate file types and size
             ]);
@@ -39,40 +51,55 @@ class TaskController extends Controller
             }
 
             // Save the comment
-            Comment::create([
-                'project_id' => $projectId,
-                'user_id' => Auth::id(),
-                'comment' => $request->input('comment') ?? '', // Default to empty string if no comment
-                'file_path' => $filePath, // Save the file path
+            $currentTask->task_comments()->create([
+                'user_id' => auth()->id(),
+                'comment' => $validated['comment'] ?? '', // Default to empty string if no comment
+                'file_path' => $filePath, // Save the file path if there is an uploaded file
             ]);
 
             // Redirect back to the task view with a success message
             return back()->with('success', 'Comment added successfully');
         }
 
-        return view('pages.TasksView', compact('project', 'task'));
+        // Define the view data to pass to the view
+        $type = 'personal';
+
+        // Pass all tasks and the current task to the view
+        return view('pages.TasksView', compact('tasks', 'currentTask', 'type'));
     }
 
-    public function updateTask(Request $request)
+
+    public function addComment(Request $request, $id)
     {
-        $task = Task::findOrFail($request->task_id);
-        $task->update($request->only('name', 'description'));
+        $validated = $request->validate([
+            'comment' => 'required|string',
+            'file' => 'nullable|file|  max:2048',
+        ]);
 
-        // Update checklist items
-        $task->checklist()->delete();
-        foreach ($request->checklist as $item) {
-            $task->checklist()->create($item);
+        try {
+            // Find the task
+            $task = Task::findOrFail($id);
+
+            // Save the comment
+            $comment = $task->comments()->create([
+                'user_id' => auth()->id(),
+                'comment' => $validated['comment'],
+                'file_path' => $request->file('file') ? $request->file('file')->store('comments') : null,
+            ]);
+
+            return redirect()->back()->with('success', 'Comment added successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to add the comment. Please try again.');
         }
-
-        return redirect()->back()->with('success', 'Task updated successfully.');
     }
+
     public function create(Request $request)
     {
         $dueDate = $request->query('due_date');
         // You can pass any additional data needed for task creation
         return view('pages.CreateTask', compact('dueDate'));
     }
-    
+
     public function getTask($id)
     {
         $task = Task::with('checklist')->findOrFail($id);
@@ -119,4 +146,66 @@ class TaskController extends Controller
 
         return back()->with('success', 'Attachment uploaded successfully');
     }
+    public function update(Request $request, $taskId)
+    {
+        try {
+            // Find the task to update
+            $task = Task::findOrFail($taskId);
+
+            // Validate incoming request data
+            $validated = $request->validate([
+                'description' => 'nullable|string',
+                'items' => 'nullable|array',
+                'items.*.id' => 'nullable|string',
+                'items.*.name' => 'nullable|string',
+                'items.*.completed' => 'nullable|boolean',
+                'items.*.deleted' => 'nullable|boolean', // Validate the 'deleted' flag
+            ]);
+
+            // Update the task description
+            $description = isset($validated['description']) ? trim($validated['description']) : null;
+            $task->description = $description;
+
+            // Update checklist items (creating, updating, or nullifying as needed)
+            if (isset($validated['items'])) {
+                foreach ($validated['items'] as $itemData) {
+                    if (isset($itemData['deleted']) && $itemData['deleted'] == 1) {
+                        // If the 'deleted' flag is 1, nullify the checklist item
+                        $item = ChecklistItem::find($itemData['id']);
+                        if ($item && $item->task_id == $task->id) {
+                            // Nullify the item instead of deleting
+                            $item->name = null;
+                            $item->completed = null; // Or set it to whatever you want as "deleted" state
+                            $item->save();  // Save the changes
+                        }
+                    } else {
+                        if (isset($itemData['id']) && str_starts_with($itemData['id'], 'new-')) {
+                            // Create a new checklist item if the ID starts with "new-"
+                            ChecklistItem::create([
+                                'task_id' => $task->id,
+                                'name' => $itemData['name'],
+                                'completed' => $itemData['completed'] ?? false,
+                            ]);
+                        } elseif (isset($itemData['id'])) {
+                            // Otherwise, update existing checklist items
+                            $item = ChecklistItem::findOrFail($itemData['id']);
+                            $item->update([
+                                'name' => $itemData['name'],
+                                'completed' => $itemData['completed'],
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Save the task
+            $task->save();
+
+            return response()->json(['success' => true, 'message' => 'Task updated successfully.']);
+        } catch (\Exception $e) {
+            \Log::error('Error updating task: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'There was an error updating the task.'], 500);
+        }
+    }
+
 }

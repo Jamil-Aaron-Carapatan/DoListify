@@ -1,9 +1,8 @@
-@php $currentTask = $project->tasks->first() @endphp
 <div class="p-4 block lg:hidden ">
     <div class="bg-gradient-to-br from-cyan-600 to-cyan-800 rounded-xl p-4 text-white space-y-4">
         <div class="flex items-center justify-between">
-            <h2 class="text-3xl font-bold">{{ $project->title }}</h2>
-            <span class="px-3 py-1 bg-cyan-800 rounded-full text-sm">{{ $project->type }}</span>
+            <h2 class="text-3xl font-bold">{{ $currentTask->name }}</h2>
+            <span class="px-3 py-1 bg-cyan-800 rounded-full text-sm">Personal</span>
         </div>
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div class="space-y-2">
@@ -14,17 +13,22 @@
                 <div class="flex items-center gap-2">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Due:
-                        {{ date('M d, Y', strtotime($project->tasks->first()->due_date ?? now())) }}</span>
+                        {{ date('M d, Y', strtotime($currentTask->due_date ?? now())) }}</span>
                 </div>
             </div>
             <div class="space-y-2">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-flag"></i>
-                    <span>Priority: {{ $project->tasks->first()->priority ?? 'N/A' }}</span>
+                    <span>Priority: {{ $currentTask->priority ?? 'N/A' }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <i class="fas fa-info-circle"></i>
-                    <span>Status: {{ $project->tasks->first()->status ?? 'To Do' }}</span>
+                    <span>Status: {{ $currentTask->status ?? 'To Do' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="taskCompleted" name="taskCompleted"
+                        {{ $currentTask->status === 'Done' ? 'checked' : '' }} disabled>
+                    <label for="taskCompleted">Task Completed</label>
                 </div>
             </div>
         </div>
@@ -39,31 +43,25 @@
             <!-- Task Header -->
             <div class="flex justify-between items-center border-b border-cyan-700 pb-4">
                 <h5 class="text-2xl text-large tracking-wid animate-fade-in">
-                    {{ ucfirst($project->tasks->first()->name) }}</h5>
-                <div
-                    class="flex items-center gap-2 bg-cyan-700/50 px-4 py-2 rounded-lg whitespace-nowrap animate-fade-in">
-                    <i class="fas fa-star text-yellow-300"></i>
-                    <span class="text-yellow-300 font-bold">+{{ $project->tasks->first()->points ?? 50 }} pts</span>
-                </div>
+                    Things To Do
+                </h5>
+
+                <button type="submit" class="px-4 py-2 bg-cyan-800 text-white rounded-md hover:bg-cyan-900 transition"
+                    onclick="SubmitEditForm()">Save</button>
             </div>
 
             <!-- Main Content -->
             <div>
                 <div class="flex">
-                    <button onclick="switchTab('description')" id="descriptionTab"
-                        class="w-auto px-4 text-normal text-black py-1.5 bg-white rounded-t-2xl"><i
-                            class="fas fa-file-alt mr-2"></i>Description</button>
-                    <button onclick="switchTab('attachment')" id="attachmentTab"
-                        class="w-auto px-4 text-normal text-black py-1.5 bg-gray-200 rounded-t-2xl"><i
-                            class="fas fa-paperclip mr-2"></i>Attachments</button>
+                    <div
+                        class="w-auto  pl-3 pt-2 pb-0 px-3 pr-10 text-zinc-600 py-1.5 bg-white rounded-t-2xl text-medium">
+                        <i class="fas fa-tasks"></i> <span>Task Overview</span>
+                    </div>
                 </div>
                 <div id="descriptionCont" class="bg-white rounded-2xl rounded-tl-none p-4">
                     <div class="">
                         <div class="border rounded-md p-4 min-h-[200px] lg:min-h-[300]">
-                            <p class="text-normal text-black">
-                                {{ $project->tasks->first()->description }}
-                            </p>
-                            @if (empty($project->tasks->first()->description))
+                            @if (empty($currentTask->description || $currentTask->checklist))
                                 @php
                                     $motivationalMessages = [
                                         'Every task is a step toward success! Add a description to get started.',
@@ -81,40 +79,49 @@
                                     <p class="text-center text-sm">Hmm, it's a mystery... No description
                                         available!</p>
                                 </div>
+                            @else
+                                <form id="taskDescriptionForm" method="POST" data-task-id="{{ $currentTask->id }}">
+                                    @csrf
+                                    <textarea id="text-desc" name="description" placeholder="Take a note..."
+                                        class="w-full mt-2 text-medium text-zinc-600 whitespace-pre-line focus:outline-none focus:border-cyan-800 placeholder:text-medium placeholder:text-lg placeholder:text-slate-400 overflow-hidden"
+                                        rows="3"
+                                        style="max-height: 500px; padding: 0; text-indent: 0; margin: 0; border: none; white-space: pre-wrap;"
+                                        oninput="autoExpand(this)">{{ $currentTask->description }}</textarea>
+                                    <div id="checklist-container">
+                                        @foreach ($currentTask->checklist as $item)
+                                            <div class="mt-2 checklist-item" data-id="{{ $item->id }}">
+                                                <div class="flex items-center space-x-2">
+                                                    <input type="checkbox" id="checklist-item-{{ $item->id }}"
+                                                        class="checkbox-item" {{ $item->completed ? 'checked' : '' }}
+                                                        onchange="toggleChecklistItem({{ $item->id }}, this.checked)">
+                                                    <input type="text" value="{{ $item->name }}"
+                                                        class="w-full border-none text-medium text-zinc-600 focus:outline-none checklist-text {{ $item->completed ? 'line-through' : '' }}"
+                                                        oninput="markChecklistItemDirty({{ $item->id }}, this.value)">
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    <button type="submit">Save Task</button>
+                                </form>
                             @endif
-                        </div>
-                    </div>
-                </div>
-                <div id="attachmentCont" class="hidden bg-white rounded-2xl rounded-tl-none p-4">
-                    <div class="">
-                        <div class="border rounded-md p-4 min-h-[200px] lg:min-h-[300]">
-                            <form method="POST" 
-                                action="{{ route('task.uploadAttachment', ['projectId' => $project->id]) }}" 
-                                enctype="multipart/form-data" 
-                                class="space-y-4">
-                                @csrf
-                                <div class="flex items-center justify-center w-full">
-                                    <label
-                                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <i class="fas fa-cloud-upload-alt text-2xl text-gray-500 mb-2"></i>
-                                            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to
-                                                    upload</span> or drag
-                                                and
-                                                drop</p>
-                                            <p class="text-xs text-gray-500">PDF, DOC, Images (MAX.
-                                                10MB)
-                                            </p>
-                                        </div>
-                                        <input type="file" name="attachment" class="hidden"
-                                            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
-                                    </label>
-                                </div>
-                                <button type="submit"
-                                    class="w-full px-4 py-2 text-white bg-cyan-600 rounded-lg hover:bg-cyan-700">
-                                    <i class="fas fa-upload mr-2"></i> Upload File
+                            <div>
+                                <button
+                                    class="text-slate-400  p-0 hover:text-cyan-800 w-auto text-medium flex space-x-2 "
+                                    onclick="addChecklistItem()">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 6L12 18" stroke="#95A5B8" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <path d="M18 12L6 12" stroke="#95A5B8" stroke-width="2"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                    <span>Add Items</span>
                                 </button>
-                            </form>
+                            </div>
+                            <div>
+                                save
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -144,7 +151,8 @@
                     </button>
                 @elseif ($currentTask->status === 'Ongoing')
                     <!-- Ongoing button -->
-                    <form id="markAsDoneForm" action="{{ route('tasks.updateStatus', $currentTask->id) }}" method="POST">
+                    <form id="markAsDoneForm" action="{{ route('tasks.updateStatus', $currentTask->id) }}"
+                        method="POST">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="status" value="Done">
@@ -169,7 +177,7 @@
                 @endif
             @endif
         </div>
-        
+
         <!-- Mark as  Done Confirmation Modal -->
         <div id="confirmationModalDone"
             class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
@@ -212,8 +220,8 @@
         <!-- Project Info Card -->
         <div class="bg-gradient-to-br from-cyan-600 to-cyan-800 rounded-xl hidden lg:block p-4 text-white space-y-4">
             <div class="flex items-center justify-between animate-fade-in">
-                <h2 class="text-large text-3xl">{{ $project->title }}</h2>
-                <span class="px-3 py-1 bg-cyan-800 rounded-full text-sm">{{ $project->type }}</span>
+                <h2 class="text-large text-3xl">{{ $currentTask ? $currentTask->name : 'No Task Selected' }}</h2>
+                <span class="px-3 py-1 bg-cyan-800 rounded-full text-sm">Personal</span>
             </div>
             <div class="grid grid-cols-2 gap-4 text-sm animate-fade-in">
                 <div class="space-y-2">
@@ -223,17 +231,17 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <i class="fas fa-calendar-alt"></i>
-                        <span>Due: {{ date('M d, Y', strtotime($project->tasks->first()->due_date ?? now())) }}</span>
+                        <span>Due: {{ date('M d, Y', strtotime($currentTask->due_date ?? now())) }}</span>
                     </div>
                 </div>
                 <div class="space-y-2">
                     <div class="flex items-center gap-2">
                         <i class="fas fa-flag"></i>
-                        <span>Priority: {{ $project->tasks->first()->priority ?? 'N/A' }}</span>
+                        <span>Priority: {{ $currentTask->priority ?? 'N/A' }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <i class="fas fa-info-circle"></i>
-                        <span>Status: {{ $project->tasks->first()->status ?? 'To Do' }}</span>
+                        <span>Status: {{ $currentTask->status ?? 'To Do' }}</span>
                     </div>
                 </div>
             </div>
@@ -253,7 +261,8 @@
 
                 <div class="flex-1">
                     <!-- Comment Form -->
-                    <form action="{{ route('task', $project->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('task.view', $currentTask->id) }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
                         <textarea class="w-full rounded-lg border-gray-200 border p-3 text-sm resize-none focus:ring-0 focus:border-gray-300"
                             placeholder="Include any additional details..." rows="1" name="comment"></textarea>
@@ -295,7 +304,7 @@
 
             <!-- Displaying Comments -->
             <div class="mt-4 max-h-[300px] overflow-y-auto scrollbar-thin animate-fade-in">
-                @forelse ($project->comments->reverse() as $comment)
+                @forelse ($currentTask->task_comments->reverse() as $comment)
                     <div class="flex gap-3 mb-4">
                         <div class="flex-1">
                             <div class="flex justify-between items-center">
@@ -360,64 +369,94 @@
         </div>
     </div>
 </div>
-
+<script src="{{ asset('storage/js/personal.js') }}"></script>
 <script>
-     function closeContFile() {
-        document.getElementById('file-cont').classList.add('hidden');
-        document.getElementById('file-upload').value = '';
+    function addChecklistItem() {
+        const container = document.getElementById('checklist-container');
+        const newItemId = `new-${Date.now()}`; // Temporary unique ID
+        const newItemHtml = `
+        <div class="mt-2 checklist-item" data-id="${newItemId}">
+            <div class="flex items-center space-x-2">
+                <input type="checkbox" id="checklist-item-${newItemId}" class="checkbox-item" onchange="toggleChecklistItem('${newItemId}', this.checked)">
+                <input type="text" value="" class="w-full border-none text-medium text-zinc-600 focus:outline-none checklist-text" placeholder="New Item" oninput="markChecklistItemDirty('${newItemId}', this.value)">
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', newItemHtml);
     }
 
-    function updateFileName(event) {
-        const fileInput = event.target;
-        const fileNameElement = document.getElementById('file-name');
-        const fileFileCont = document.getElementById('file-cont');
-        const fileName = fileInput.files[0]?.name || 'No file selected';
+    // JavaScript to mark an item for deletion
+    function markForDeletion(itemId) {
+        console.log("Marking for deletion: " + itemId); // Debug log
 
-        fileFileCont.classList.remove('hidden');
-        if (fileName.length > 16) {
-            fileNameElement.textContent = fileName.substring(0, 16) + '...';
-            fileNameElement.title = fileName;
-        } else {
-            fileNameElement.textContent = fileName;
-            fileNameElement.title = '';
-        }
+        const checklistItem = document.querySelector(`.checklist-item[data-id="${itemId}"]`);
+        const deleteFlagInput = checklistItem.querySelector('.deleted-flag'); // Find the deleted flag input field
+
+        // Mark the item for deletion by setting the flag
+        deleteFlagInput.value = '1'; // 1 means deleted
+
+        // Optionally, hide the item visually
+        checklistItem.classList.add('hidden');
     }
 
-    function showConfirmationDone() {
-        document.getElementById('confirmationModalDone').style.display = 'flex';
-    }
 
-    function hideConfirmationDone() {
-        document.getElementById('confirmationModalDone').style.display = 'none';
-    }
-
-    function submitMarkAsDoneForm() {
-        document.getElementById('markAsDoneForm').submit();
-        hideConfirmationDone();
-    }
-
-    function showConfirmationStart() {
-        document.getElementById('confirmationModalStart').style.display = 'flex';
-    }
-
-    function hideConfirmationStart() {
-        document.getElementById('confirmationModalStart').style.display = 'none';
-    }
-
-    function submitStartForm() {
-        document.getElementById('startID').submit();
-        hideConfirmationStart();
-    }
-    window.addEventListener('click', function(event) {
-        const modalDone = document.getElementById('confirmationModalDone');
-        const modalStart = document.getElementById('confirmationModalStart');
-        
-        if (event.target === modalDone) {
-            hideConfirmationDone();
-        }
-        
-        if (event.target === modalStart) {
-            hideConfirmationStart();
+    // On form submission, deleted items will be included automatically in the request
+    document.getElementById('taskDescriptionForm').addEventListener('submit', function(e) {
+        const deletedItems = document.querySelectorAll('input[name="deleted_items[]"][value]');
+        if (deletedItems.length > 0) {
+            // The deleted items will be sent as part of the form data
+            // You can add additional logic here if needed
         }
     });
+
+    function toggleChecklistItem(id, isChecked) {
+        const checklistItem = document.querySelector(`.checklist-item[data-id="${id}"]`);
+        const textInput = checklistItem.querySelector('.checklist-text');
+
+        if (isChecked) {
+            textInput.classList.add('line-through'); // Add strike-through style
+        } else {
+            textInput.classList.remove('line-through'); // Remove strike-through style
+        }
+
+        console.log(`Item ${id} marked as ${isChecked ? 'completed' : 'incomplete'}`);
+        // Optionally, save changes immediately via AJAX
+    }
+
+    function SubmitEditForm() {
+        const description = document.getElementById('text-desc').value;
+        const items = Array.from(document.querySelectorAll('.checklist-item')).map(item => ({
+            id: item.dataset.id,
+            name: item.querySelector('.checklist-text').value,
+            completed: item.querySelector('.checkbox-item').checked,
+        }));
+
+        // Retrieve the task ID
+        const taskId = document.getElementById('taskDescriptionForm').dataset.taskId;
+
+        fetch(`/tasks/update/${taskId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify({
+                    description,
+                    items
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(errorText => {
+                        throw new Error(errorText);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Task updated successfully:', data);
+            })
+            .catch(error => {
+                console.error('Error saving form:', error.message);
+            });
+    }
 </script>

@@ -9,7 +9,7 @@ class Comment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['project_id', 'user_id', 'comment', 'file_path'];
+    protected $fillable = ['project_id', 'user_id', 'task_id', 'comment', 'file_path'];
 
     public function project()
     {
@@ -19,5 +19,9 @@ class Comment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function task()
+    {
+        return $this->belongsTo(Task::class, 'task_id');
     }
 }

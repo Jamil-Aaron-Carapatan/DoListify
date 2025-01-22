@@ -10,7 +10,6 @@ class Task extends Model
     use HasFactory;
 
     protected $fillable = [
-        
         'name',
         'description',
         'assigned_to',
@@ -37,60 +36,33 @@ class Task extends Model
     {
         parent::boot();
 
-        static::created(function ($task) {
-            // Only create notifications if there's a project associated
-            if ($task->project) {
-                // Create notification for task owner
-                Notification::create([
-                    'user_id' => $task->project->created_by,
-                    'type' => 'task_created',
-                    'message' => "Task '{$task->name}' has been successfully created",
-                    'link' => "/DoListify/Task/{$task->project_id}",
-                ]);
+        static::created(function ($currentTask) {
+            // Create notification for task owner
+            Notification::create([
+                'user_id' => $currentTask->created_by,
+                'type' => 'task_created',
+                'message' => "Task '{$currentTask->name}' has been successfully created",
+                'link' => "/DoListify/Task/{$currentTask->id}",
+            ]);
 
-                // If it's a team project, notify assigned members
-                if ($task->project->type === 'Team' && $task->assigned_to) {
-                    Notification::create([
-                        'user_id' => $task->assigned_to,
-                        'type' => 'task_assigned',
-                        'message' => "A new task '{$task->name}' has been assigned to you",
-                        'link' => "/DoListify/Task/{$task->project_id}",
-                    ]);
-                }
+            // If it's a team project task, notify assigned members
+            if ($currentTask->project_id && $currentTask->project && $currentTask->project->type === 'Team' && $currentTask->assigned_to) {
+                Notification::create([
+                    'user_id' => $currentTask->assigned_to,
+                    'type' => 'task_assigned',
+                    'message' => "A new task '{$currentTask->name}' has been assigned to you",
+                    'link' => "/DoListify/Task/{$currentTask->id}",
+                ]);
             }
         });
     }
 
     /**
-     * Get the project that owns the task
+     * Get the project that owns the task.
      */
-    public function project()
+    public function user()
     {
-        return $this->belongsTo(Project::class, 'project_id');
-    }
-
-    /**
-     * Get the user assigned to the task
-     */
-    public function assignedUser()
-    {
-        return $this->belongsTo(User::class, 'assigned_to');
-    }
-
-    /**
-     * Get the users assigned to the task
-     */
-    public function assignees()
-    {
-        return $this->belongsToMany(User::class, 'task_user', 'task_id', 'user_id');
-    }
-
-    /**
-     * Get the assignee of the task
-     */
-    public function assignee()
-    {
-        return $this->belongsTo(User::class, 'assigned_to');
+        return $this->belongsTo(User::class, 'created_by');
     }
     public function task_comments()
     {

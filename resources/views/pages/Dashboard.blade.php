@@ -115,7 +115,7 @@
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Daily Tasks for Points</h3>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Weekly Task Tasks for Points</h3>
                     <div class="bg-white rounded-2xl shadow-md p-2">
                         <div class="space-y-4">
                             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
