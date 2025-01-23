@@ -21,14 +21,22 @@ return new class extends Migration
             $table->time('due_time')->nullable();
             $table->enum('priority', ['High', 'Medium', 'Low']);
             $table->enum('status', ['To Do', 'Ongoing', 'Done'])->default('To Do');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+
+            // Add points to the task
+            $table->integer('points')->default(0); // Points that will be awarded when task is completed
+            
+            // Optionally, track the user who completed the task (if needed)
+            $table->foreignId(column: 'completed_by')->nullable()->constrained('users')->onDelete('set null'); // User who marked it as done
+            
             $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
-     */
-    public function down(): void
+        */                                                                                                                                                                                                                                      
+   public function down(): void
     {
         Schema::dropIfExists('tasks');
     }

@@ -43,7 +43,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Project Related Routes
     Route::get('/DoListify/Task/To Do', [ProjectController::class, 'projectView'])->name('projects');
-    Route::post('/DoListify/Add-Task/personal', [ProjectController::class, 'store'])->name('addTask.post');
+    Route::post('/DoListify/Add-Task/personal',  [ProjectController::class, 'store'])->name('addTask.post');
     Route::post('/DoListify/Add-Project/team', [ProjectController::class, 'storeTeamProject'])->name('projects.storeTeam');
     Route::get('/DoListify/Projects/filter', [ProjectController::class, 'filter'])->name('projects.filter');
     Route::get('/DoListify/search-projects', [ProjectController::class, 'searchProjects'])->name('search.projects');
@@ -54,6 +54,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tasks/{id}/comment', [TaskController::class, 'addComment'])->name('tasks.comment');
     Route::get('/DoListify/Task/create', [TaskController::class, 'create'])->name('tasks.create');
     Route::post('/task/{projectId}/attachment', [TaskController::class, 'storeAttachment'])->name('task.uploadAttachment');
+
+    // Team Task Related Routes 
+    Route::get('/DoListify/Team/Task', [ProjectController::class, 'showTeamTask'])->name('team.task');
 
     Route::patch('/tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
     // Notification Routes

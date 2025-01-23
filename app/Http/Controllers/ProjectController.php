@@ -48,7 +48,7 @@ class ProjectController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
-
+        \Log::info($request->all()); // Log incoming request
         try {
             DB::beginTransaction();
 
@@ -100,27 +100,50 @@ class ProjectController extends Controller
         }
     }
 
+    public function showTeamTask(Request $request)
+    {
+        return view('pages.TeamTaskView');
+    }
     public function storeTeamProject(Request $request)
     {
         Log::info($request->all()); // Log the request data
         // Validate project data
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'description' => 'required|string',
             'type' => 'required|in:team',
             'team_members' => 'required|array',
             'team_members.*' => 'email|exists:users,email',
             'tasks' => 'required|array',
             'tasks.*.name' => 'required|string|max:255',
-            'tasks.*.description' => 'nullable|string',
+            'tasks.*.description' => 'required|string',
             'tasks.*.assignee' => 'required|exists:users,id',
             'tasks.*.due_date' => 'required|date',
             'tasks.*.due_time' => 'required',
             'tasks.*.priority' => 'required|in:High,Medium,Low',
+            'tasks.*.points' => 'required|integer|min:1',
+        ], [
+            'title.required' => 'Project title is required',
+            'description.required' => 'Project description is required',
+            'type.required' => 'Project type is required',
+            'team_members.required' => 'At least one team member is required',
+            'team_members.*.email' => 'Each team member must be a valid email',
+            'tasks.required' => 'At least one task is required',
+            'tasks.*.name.required' => 'Task name is required',
+            'tasks.*.description.required' => 'Task description is required',
+            'tasks.*.assignee.required' => 'Task assignee is required',
+            'tasks.*.due_date.required' => 'Task due date is required',
+            'tasks.*.due_time.required' => 'Task due time is required',
+            'tasks.*.priority.required' => 'Task priority is required',
+            'tasks.*.points.required' => 'Task points are required',
+            'tasks.*.points.integer' => 'Task points must be an integer',
+            'tasks.*.points.min' => 'Task points must be at least 1',
         ]);
 
         // Create project
         $project = Project::create([
             'title' => $validated['title'],
+            'description' => $validated['description'],
             'type' => $validated['type'],
             'created_by' => auth()->id(),
         ]);
@@ -152,8 +175,11 @@ class ProjectController extends Controller
                 'due_date' => $taskData['due_date'],
                 'due_time' => $taskData['due_time'],
                 'priority' => $taskData['priority'],
+                'points' => $taskData['points'],
             ]);
         }
+
+        // Send notifications to team members
         foreach ($validated['team_members'] as $email) {
             $user = User::where('email', $email)->first();
             if ($user) {
@@ -328,16 +354,6 @@ class ProjectController extends Controller
         return response()->json(['projects' => $projects]);
     }
 
-    public function search(Request $request)
-    {
-        $query = $request->input('query');
-        $projects = Project::where('title', 'like', "%{$query}%")
-            ->orWhere('type', 'like', "%{$query}%")
-            ->limit(5)
-            ->get();
-
-        return response()->json(['projects' => $projects]);
-    }
 
     public function getProjectStats()
     {

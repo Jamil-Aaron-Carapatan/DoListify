@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->string('title')->nullable();
-            $table->enum('type', ['Personal', 'Team']);
+            $table->enum('type', ['Team'])->default('Team');
             $table->foreignId('created_by')->constrained('users');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

@@ -50,3 +50,16 @@ select:invalid {
 option {
     color: black;
 }
+#assignee-suggestions {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#assignee-suggestions li {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#assignee-suggestions li:last-child {
+    border-bottom: none;
+}
