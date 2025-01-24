@@ -104,98 +104,136 @@ class ProjectController extends Controller
     {
         return view('pages.TeamTaskView');
     }
+    public function showAddProject()
+    {
+        // Fetch all users that can be assigned to tasks
+        $users = User::all();
+
+        // Return the view with users data
+        return view('.pages.AddProject', compact('users'));
+    }
     public function storeTeamProject(Request $request)
     {
-        Log::info($request->all()); // Log the request data
-        // Validate project data
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'type' => 'required|in:team',
-            'team_members' => 'required|array',
-            'team_members.*' => 'email|exists:users,email',
-            'tasks' => 'required|array',
-            'tasks.*.name' => 'required|string|max:255',
-            'tasks.*.description' => 'required|string',
-            'tasks.*.assignee' => 'required|exists:users,id',
-            'tasks.*.due_date' => 'required|date',
-            'tasks.*.due_time' => 'required',
-            'tasks.*.priority' => 'required|in:High,Medium,Low',
-            'tasks.*.points' => 'required|integer|min:1',
-        ], [
-            'title.required' => 'Project title is required',
-            'description.required' => 'Project description is required',
-            'type.required' => 'Project type is required',
-            'team_members.required' => 'At least one team member is required',
-            'team_members.*.email' => 'Each team member must be a valid email',
-            'tasks.required' => 'At least one task is required',
-            'tasks.*.name.required' => 'Task name is required',
-            'tasks.*.description.required' => 'Task description is required',
-            'tasks.*.assignee.required' => 'Task assignee is required',
-            'tasks.*.due_date.required' => 'Task due date is required',
-            'tasks.*.due_time.required' => 'Task due time is required',
-            'tasks.*.priority.required' => 'Task priority is required',
-            'tasks.*.points.required' => 'Task points are required',
-            'tasks.*.points.integer' => 'Task points must be an integer',
-            'tasks.*.points.min' => 'Task points must be at least 1',
-        ]);
+        Log::info($request->all()); // Log incoming data
 
-        // Create project
-        $project = Project::create([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'type' => $validated['type'],
-            'created_by' => auth()->id(),
-        ]);
+        try {
+            // Validate the input
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'type' => 'required|in:team',
+                'tasks' => 'required|array',
+                'tasks.*.name' => 'required|string|max:255',
+                'tasks.*.description' => 'required|string',
+                'tasks.*.assignee' => 'required|exists:users,email',
+                'tasks.*.due_date' => 'required|date|after_or_equal:today|before_or_equal:' . now()->addYears(3)->format('Y-m-d'),
+                'tasks.*.due_time' => 'required|date_format:H:i',
+                'tasks.*.priority' => 'required|in:High,Medium,Low',
+                'tasks.*.points' => 'required|integer|min:1',
+            ],[
+                'tasks.*.name.required' => 'Task name is required',
+                'tasks.*.description.required' => 'Task description is required',
+                'tasks.*.assignee.exists' => 'Assignee email not found',
+                'tasks.*.due_date.after_or_equal' => 'Due date must be today or later',
+                'tasks.*.due_date.before_or_equal' => 'Due date must be within 3 years',
+                'tasks.*.due_time.required' => 'Due time is required',
+                'tasks.*.due_time.date_format' => 'Invalid due time format',
+                'tasks.*.priority.required' => 'Task priority is required',
+                'tasks.*.points.required' => 'Task points are required',
+            ]);
 
-        // Add creator as owner
-        ProjectMember::create([
-            'project_id' => $project->id,
-            'user_id' => auth()->id(),
-            'role' => 'owner',
-        ]);
+            Log::info('Validation passed:', $validated);
 
-        // Add team members
-        foreach ($validated['team_members'] as $email) {
-            $user = User::where('email', $email)->first();
+            // Create the project
+            $project = Project::create([
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'type' => $validated['type'],
+                'created_by' => auth()->id(),
+            ]);
+
+            Log::info('Project created:', $project->toArray());
+
+            // Add the creator as the owner
             ProjectMember::create([
                 'project_id' => $project->id,
-                'user_id' => $user->id,
-                'role' => 'member',
+                'user_id' => auth()->id(),
+                'role' => 'owner',
             ]);
-        }
 
-        // Create tasks
-        foreach ($validated['tasks'] as $taskData) {
-            Task::create([
-                'project_id' => $project->id,
-                'name' => $taskData['name'],
-                'description' => $taskData['description'],
-                'assigned_to' => $taskData['assignee'],
-                'due_date' => $taskData['due_date'],
-                'due_time' => $taskData['due_time'],
-                'priority' => $taskData['priority'],
-                'points' => $taskData['points'],
-            ]);
-        }
+            // Add team members based on assignee email (directly from task assignee)
+            $teamMembers = [];
+            foreach ($validated['tasks'] as $taskData) {
+                $email = $taskData['assignee']; // Assignee email directly from the task data
 
-        // Send notifications to team members
-        foreach ($validated['team_members'] as $email) {
-            $user = User::where('email', $email)->first();
-            if ($user) {
-                Notification::create([
-                    'user_id' => $user->id,
-                    'type' => 'added_to_project',
-                    'message' => 'You have been added to the project "' . $validated['title'] . '".',
-                    'project_id' => $project->id,
-                    'link' => route('projects.show', $project->id),
-                ]);
+                if (!in_array($email, $teamMembers)) {
+                    $teamMembers[] = $email; // Store email to avoid duplicate entries
+
+                    $user = User::where('email', $email)->first();
+                    if ($user) {
+                        ProjectMember::create([
+                            'project_id' => $project->id,
+                            'user_id' => $user->id,
+                            'role' => 'member',
+                        ]);
+                    } else {
+                        Log::error("Team member not found for email: $email");
+                    }
+                }
             }
-        }
 
-        return redirect()->route('task', $project->id)
-            ->with('success', 'Project created successfully');
+            // Create tasks and assign them based on assignee email
+            foreach ($validated['tasks'] as $taskData) {
+                // Find user by email for task assignment
+                $user = User::where('email', $taskData['assignee'])->first();
+
+                if ($user) {
+                    Task::create([
+                        'project_id' => $project->id,
+                        'name' => $taskData['name'],
+                        'description' => $taskData['description'],
+                        'assigned_to' => $user->id, // Assign task to user ID
+                        'due_date' => $taskData['due_date'],
+                        'due_time' => $taskData['due_time'],
+                        'priority' => $taskData['priority'],
+                        'points' => $taskData['points'],
+                        'created_by' => auth()->id(),
+                    ]);
+                } else {
+                    Log::error("User not found for assignee email: " . $taskData['assignee']);
+                }
+            }
+
+            // Notify team members
+            foreach ($teamMembers as $email) {
+                $user = User::where('email', $email)->first();
+                if ($user) {
+                    Notification::create([
+                        'user_id' => $user->id,
+                        'type' => 'added_to_project',
+                        'message' => 'You have been added to the project "' . $validated['title'] . '".',
+                        'project_id' => $project->id,
+                        'link' => route('projects.show', $project->id),
+                    ]);
+                }
+            }
+
+            // Return success response with project, tasks, and team members data
+            return response()->json([
+                'success' => true,
+                'message' => 'Project created successfully',
+                'data' => [
+                    'project' => $project,
+                    'tasks' => $project->tasks,
+                    'team_members' => $project->members,
+                ]
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Error storing project:', ['message' => $e->getMessage()]);
+            return back();
+        }
     }
+
     public function projectView(Request $request)
     {
         $tasks = Task::where('created_by', auth()->id())->get();

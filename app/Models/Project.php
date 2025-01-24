@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Project extends Model
 {
@@ -14,18 +15,20 @@ class Project extends Model
     protected $fillable = [
         'title',
         'type',
-        'created_by'
+        'description',
+        'created_by',
     ];
 
     /**
-     * Get all tasks for the project
+     * Get all tasks for the project.
      */
-    public function tasks()
+    public function tasks(): HasMany
     {
         return $this->hasMany(Task::class, 'project_id');
     }
+
     /**
-     * Get all members of the project
+     * Get all members of the project.
      */
     public function members(): BelongsToMany
     {
@@ -35,15 +38,15 @@ class Project extends Model
     }
 
     /**
-     * Get the creator of the project
+     * Get the creator of the project.
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
-     * Get the leader of the project
+     * Get the leader of the project (owner).
      */
     public function leader()
     {
@@ -51,7 +54,7 @@ class Project extends Model
     }
 
     /**
-     * Get the regular members of the project
+     * Get the regular members of the project (excluding the leader).
      */
     public function regularMembers()
     {
@@ -59,13 +62,17 @@ class Project extends Model
     }
 
     /**
-     * Get all project members
+     * Get all project members as a direct relation.
      */
-    public function projectMembers()
+    public function projectMembers(): HasMany
     {
-        return $this->hasMany(ProjectMember::class);
+        return $this->hasMany(ProjectMember::class, 'project_id');
     }
-    public function comments()
+
+    /**
+     * Get all comments associated with the project.
+     */
+    public function comments(): HasMany
     {
         return $this->hasMany(Comment::class, 'project_id');
     }

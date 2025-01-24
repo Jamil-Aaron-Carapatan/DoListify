@@ -35,7 +35,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/tasks', [TaskController::class, 'updateTask'])->name('updateTask');
     Route::get('/DoListify/Dashboard', [ProjectController::class, 'getProjectStats'])->name('dashboard');
     Route::get('/DoListify/Add/Task/', [ProjectController::class, 'showAddTask'])->name('addTask');
-    Route::view('/DoListify/Add/Project', 'pages.AddProject')->name('addProject');
+    Route::get('/DoListify/Add/Project', [ProjectController::class, 'showAddProject'])->name('addProject');
     Route::view('/DoListify/Team', 'pages.Team')->name('team');
     Route::view('/DoListify/Calendar', 'pages.Calendar')->name('calendar');
     Route::view('/DoListify/Leaderboard', 'pages.Leaderboard')->name('leaderboard');

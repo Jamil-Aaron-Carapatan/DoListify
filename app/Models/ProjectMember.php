@@ -4,8 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProjectMember extends Model
 {
@@ -14,21 +13,21 @@ class ProjectMember extends Model
     protected $fillable = [
         'project_id',
         'user_id',
-        'role'
+        'role',
     ];
 
     /**
-     * Get the project that the member belongs to
+     * Get the project that the member belongs to.
      */
-    public function project()
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
     /**
-     * Get the user associated with the project member
+     * Get the user associated with the project member.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

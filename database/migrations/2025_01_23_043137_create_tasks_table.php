@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('assigned_to')->nullable()->constrained('users');
             $table->date('due_date')->nullable();
             $table->time('due_time')->nullable();
-            $table->enum('priority', ['High', 'Medium', 'Low']);
+            $table->enum('priority', ['High', 'Medium', 'Low'])->default('Low');
             $table->enum('status', ['To Do', 'Ongoing', 'Done'])->default('To Do');
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
 

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Task extends Model
 {
@@ -20,12 +22,9 @@ class Task extends Model
         'attachment',
         'project_id',
         'reminder_time',
-        'created_by'  // Add this
+        'created_by',
+        'points',
     ];
-    public function checklist()
-    {
-        return $this->hasMany(TaskChecklist::class)->orderBy('order');
-    }
 
     protected $casts = [
         'due_date' => 'date',
@@ -37,20 +36,20 @@ class Task extends Model
         parent::boot();
 
         static::created(function ($currentTask) {
-            // Create notification for task owner
+            // Notify the task creator
             Notification::create([
                 'user_id' => $currentTask->created_by,
                 'type' => 'task_created',
-                'message' => "Task '{$currentTask->name}' has been successfully created",
+                'message' => "Task '{$currentTask->name}' has been successfully created.",
                 'link' => "/DoListify/Task/{$currentTask->id}",
             ]);
 
-            // If it's a team project task, notify assigned members
+            // Notify the assigned member if it's a team task
             if ($currentTask->project_id && $currentTask->project && $currentTask->project->type === 'Team' && $currentTask->assigned_to) {
                 Notification::create([
                     'user_id' => $currentTask->assigned_to,
                     'type' => 'task_assigned',
-                    'message' => "A new task '{$currentTask->name}' has been assigned to you",
+                    'message' => "A new task '{$currentTask->name}' has been assigned to you.",
                     'link' => "/DoListify/Task/{$currentTask->id}",
                 ]);
             }
@@ -60,13 +59,32 @@ class Task extends Model
     /**
      * Get the project that owns the task.
      */
-    public function user()
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * Get the user who created the task.
+     */
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-    public function task_comments()
+
+    /**
+     * Get all comments associated with the task.
+     */
+    public function comments(): HasMany
     {
         return $this->hasMany(Comment::class, 'task_id');
     }
 
+    /**
+     * Get the checklist items for the task.
+     */
+    public function checklist(): HasMany
+    {
+        return $this->hasMany(TaskChecklist::class)->orderBy('order');
+    }
 }
